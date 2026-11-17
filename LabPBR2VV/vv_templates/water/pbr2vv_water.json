@@ -1,0 +1,32 @@
+{
+  "format_version": "1.21.120",
+  "minecraft:water_settings": {
+    "description": {
+      "identifier": "pbr2vv:default_water"
+    },
+    "_comment": "水体：particle_concentrations 颗粒浓度(chlorophyll 叶绿素/suspended_sediment 悬浮泥沙/cdom 有色溶解有机物)。caustics 焦散(enabled/frame_length 帧时长/scale 缩放/power 强度)——全包 caustics 参数必须一致。waves 波浪(enabled 开关全包必须一致/frequency/octaves/depth/speed/shape/pull/mix/frequency_scaling/speed_scaling)。water 按【水体几何所在位置】而非玩家位置做群系混合。摘自官方样例包并改命名空间。",
+    "particle_concentrations": {
+      "chlorophyll": 0.0,
+      "suspended_sediment": 0.0,
+      "cdom": 0.0
+    },
+    "caustics": {
+      "enabled": true,
+      "frame_length": 0.09,
+      "scale": 0.5,
+      "power": 1
+    },
+    "waves": {
+      "enabled": false,
+      "frequency": 1,
+      "octaves": 28,
+      "depth": 1,
+      "speed": 2,
+      "shape": 1.5,
+      "pull": 0.38,
+      "mix": 0.2,
+      "frequency_scaling": 1.2,
+      "speed_scaling": 1.03
+    }
+  }
+}

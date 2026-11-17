@@ -1,0 +1,44 @@
+{
+  "format_version": "1.21.80",
+  "minecraft:lighting_settings": {
+    "description": {
+      "identifier": "pbr2vv:default_lighting"
+    },
+    "_comment": "光照：太阳/月亮的照度(illuminance)与颜色(color)按时间点关键帧；0=正午,0.25=日落,0.5=午夜,0.75=日出,1=次日正午。orbital_offset_degrees 全包必须一致(不可混合)。flash 是手持火把/烟花类的点闪光。ambient 环境光、sky 天空强度、emissive.desaturation 自发光去饱和。摘自官方样例包并改命名空间。",
+    "directional_lights": {
+      "orbital": {
+        "sun": {
+          "illuminance": {
+            "0.000000": 100.0, "0.050000": 100.0, "0.282000": 1.0,
+            "0.292000": 0.0, "0.709000": 0.0, "0.719000": 1.0,
+            "0.950000": 100.0, "1.000000": 100.0
+          },
+          "color": {
+            "0.000000": [255, 227, 215], "0.242908": [255, 127, 0],
+            "0.506998": [255, 105, 0], "0.717949": [255, 133, 133],
+            "1.000000": [255, 227, 215]
+          }
+        },
+        "moon": {
+          "illuminance": { "0.000000": 0.0, "0.225000": 0.4, "0.735000": 0.4, "1.000000": 0.0 },
+          "color": { "0.000000": [163, 182, 255], "1.000000": [163, 182, 255] }
+        },
+        "orbital_offset_degrees": 0.0
+      },
+      "flash": {
+        "illuminance": 10.0,
+        "color": [228, 93, 255]
+      }
+    },
+    "emissive": {
+      "desaturation": 0.0
+    },
+    "ambient": {
+      "color": "#FFFFFF",
+      "illuminance": 0.02
+    },
+    "sky": {
+      "intensity": 1.0
+    }
+  }
+}

@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PBR2VV · LabPBR → 灵动视效 转换器</title>
+<style>
+  :root{
+    --bg:#12161a; --card:#1c2229; --card2:#232b33; --line:#303b45;
+    --txt:#e8eef2; --dim:#94a4b0; --green:#7cb342; --green2:#aed581;
+    --amber:#ffb74d; --red:#ef5350; --blue:#64b5f6;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  .app{max-width:760px;margin:0 auto;padding:18px 14px 60px}
+  header{display:flex;align-items:center;gap:12px;padding:8px 2px 18px}
+  .logo{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--green),#4e7a2a);
+    display:grid;place-items:center;font-size:23px;flex:0 0 auto;box-shadow:0 4px 14px #0006}
+  h1{font-size:19px;margin:0;letter-spacing:.3px}
+  .sub{font-size:12px;color:var(--dim);margin:2px 0 0}
+  .badge{display:inline-block;font-size:11px;padding:2px 9px;border:1px solid var(--green);
+    color:var(--green2);border-radius:20px;margin-left:auto;white-space:nowrap}
+  .note{background:#1a2430;border-left:3px solid var(--blue);padding:10px 12px;border-radius:0 8px 8px 0;
+    font-size:12.5px;color:#c6d6e2;margin-bottom:16px}
+  .steps{display:flex;gap:4px;margin-bottom:16px}
+  .step{flex:1;text-align:center;font-size:11px;color:var(--dim);padding:7px 2px;border-radius:6px;
+    background:var(--card);border:1px solid transparent;transition:.2s}
+  .step.on{background:#2b3a22;border-color:var(--green);color:var(--green2);font-weight:600}
+  .step.done{color:var(--green2)}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;
+    box-shadow:0 2px 12px #0003}
+  section[hidden]{display:none}
+  h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  h2 .n{width:21px;height:21px;border-radius:6px;background:var(--green);color:#12200a;
+    font-size:12px;display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+  .hint{font-size:12px;color:var(--dim);margin:0 0 14px}
+  .drop{border:2px dashed #43535f;border-radius:12px;padding:26px 14px;text-align:center;cursor:pointer;
+    transition:.2s;background:#161d23}
+  .drop:hover,.drop.over{border-color:var(--green);background:#1b2618}
+  .drop .ic{font-size:34px;display:block;margin-bottom:6px}
+  .drop b{font-size:14px}
+  .drop small{display:block;color:var(--dim);font-size:11.5px;margin-top:5px}
+  input[type=file]{display:none}
+  .row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+  button{font:inherit;font-size:13px;font-weight:600;border-radius:9px;padding:10px 16px;cursor:pointer;
+    border:1px solid var(--line);background:var(--card2);color:var(--txt);transition:.15s}
+  button:hover:not(:disabled){border-color:var(--green);transform:translateY(-1px)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.primary{background:var(--green);color:#10200a;border-color:var(--green)}
+  button.primary:hover:not(:disabled){background:var(--green2)}
+  button.ghost{background:transparent}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+  .stat{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:9px 6px;text-align:center}
+  .stat b{display:block;font-size:20px;color:var(--green2);line-height:1.2}
+  .stat span{font-size:10.5px;color:var(--dim)}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
+  th,td{text-align:left;padding:6px 7px;border-bottom:1px solid var(--line);word-break:break-all}
+  th{color:var(--dim);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
+  td.mono{font-family:var(--mono);font-size:10.5px}
+  .ok{color:var(--green2)} .warn{color:var(--amber)} .err{color:var(--red)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  label{display:block;font-size:11.5px;color:var(--dim);margin-bottom:4px}
+  input[type=text],select,textarea{width:100%;background:#141a20;border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:9px 10px;font:inherit;font-size:12.5px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--green)}
+  textarea{font-family:var(--mono);font-size:11px;min-height:66px;resize:vertical}
+  .chk{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--txt);margin:7px 0;cursor:pointer}
+  .chk input{margin-top:4px;accent-color:var(--green);flex:0 0 auto}
+  .chk small{color:var(--dim);font-size:11px;display:block}
+  .bar{height:8px;background:#0e1317;border-radius:20px;overflow:hidden;margin:10px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .2s}
+  .log{background:#0d1216;border:1px solid var(--line);border-radius:8px;padding:10px;height:160px;
+    overflow:auto;font-family:var(--mono);font-size:10.5px;color:#a8bcc9;white-space:pre-wrap}
+  .log .e{color:var(--red)} .log .w{color:var(--amber)} .log .g{color:var(--green2)}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+  summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--green2)}
+  details p,details li{font-size:12px;color:#c2cfd8}
+  details code{font-family:var(--mono);background:#0e1419;padding:1px 5px;border-radius:4px;color:var(--green2)}
+  footer{text-align:center;font-size:11px;color:#667683;line-height:1.9}
+  .pill{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:var(--mono);font-size:10.5px}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
+    .badge{display:none}h1{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">◈</div>
+    <div>
+      <h1>PBR2VV · 材质转换器</h1>
+      <p class="sub">LabPBR 材质包 → 基岩版灵动视效 .mcpack</p>
+    </div>
+    <span class="badge">本地运行 · 不上传</span>
+  </header>
+
+  <div class="note">
+    这是 <b>M0 设计原型</b>（配套设计文档 <span class="pill">14_LabPBR转VV安卓App设计.md</span>）。
+    转换引擎是<b>真实可用</b>的：读 ZIP → 通道换算 → 32-bit BGRA TGA → 生成 texture_set / manifest → 打包 .mcpack。
+    正式 APK 把本页内嵌进 WebView，原生侧只负责选文件与导出。
+  </div>
+
+  <div class="steps">
+    <div class="step on" id="st1">① 选包</div>
+    <div class="step" id="st2">② 扫描</div>
+    <div class="step" id="st3">③ 配置</div>
+    <div class="step" id="st4">④ 转换</div>
+    <div class="step" id="st5">⑤ 导出</div>
+  </div>
+
+  <!-- ① 选包 -->
+  <section id="s1">
+    <h2><span class="n">1</span>选择 Java 材质包</h2>
+    <p class="hint">支持 .zip 资源包；需含 <span class="pill">assets/*/textures/</span> 下的 .png 与同名 _s / _n 贴图。包名、介绍（<span class="pill">pack.mcmeta</span> 的 description）与展示图标自动从源包读取；输出的基岩版介绍会附上转换时间、工具与选项记录。</p>
+    <div class="drop" id="drop">
+      <span class="ic">📦</span>
+      <b>点击选择或拖入 .zip</b>
+      <small>文件不会离开本机 · 无需网络权限</small>
+    </div>
+    <input type="file" id="file" accept=".zip,.mcpack,application/zip">
+    <div class="row">
+      <button class="ghost" id="demo">生成演示包并载入</button>
+      <span style="font-size:11px;color:var(--dim);align-self:center" id="zipmode">引擎检测中…</span>
+    </div>
+  </section>
+
+  <!-- ② 扫描 -->
+  <section id="s2" hidden>
+    <h2><span class="n">2</span>扫描结果</h2>
+    <p class="hint">按同目录同基名配对 <span class="pill">&lt;name&gt;.png / _s.png / _n.png</span>。 <b style="color:var(--green2)">点击表格任意一行可预览该组的材质通道。</b></p>
+    <div class="stats" id="stats"></div>
+    <div style="max-height:230px;overflow:auto">
+      <table><thead><tr><th>源贴图</th><th>输出名</th><th>_s</th><th>_n</th></tr></thead><tbody id="tbl"></tbody></table>
+    </div>
+    <p class="hint" id="scanwarn" style="margin-top:10px"></p>
+    <div id="preview" hidden style="margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card2)">
+      <div id="pv-title" style="font-size:13px;margin-bottom:8px"></div>
+      <div id="pv-imgs" style="display:flex;flex-wrap:wrap;gap:12px"></div>
+      <div id="pv-stats" style="margin-top:10px;font-size:12px;color:var(--dim);line-height:1.6"></div>
+    </div>
+  </section>
+
+  <!-- ③ 配置 -->
+  <section id="s3" hidden>
+    <h2><span class="n">3</span>转换配置</h2>
+    <div class="grid">
+      <div><label>资源包名称（自动识别，可修改）</label><input type="text" id="packname" value="My LabPBR Pack"></div>
+      <div><label>目标引擎版本</label>
+        <select id="engine">
+          <option value="1,21,120" selected>1.21.120（推荐 · VV 最低要求，兼容性最好）</option>
+          <option value="1,26,0">1.26.0（仅国际版新客户端，网易版会报版本过高）</option>
+          <option value="1,26,70">1.26.70（仅 Preview，最容易不兼容）</option>
+        </select>
+      </div>
+      <div><label>金属度策略</label>
+        <select id="metal">
+          <option value="binary" selected>二值（推荐）：G≥230 判为金属</option>
+          <option value="f0">实验：把 F0 当部分金属（不物理准确）</option>
+          <option value="none">全部非金属</option>
+        </select>
+      </div>
+      <div><label>名称映射（自定义覆盖，JSON）</label>
+        <textarea id="mapjson" spellcheck="false">{}</textarea>
+        <small style="display:block;color:var(--dim);font-size:11px;margin-top:4px">已内置 <b>445</b> 条 Java→基岩映射（见 15_纹理名映射表.md）；此处只填需要覆盖的条目，优先级最高。</small>
+      </div>
+      <div><label>基岩包封面（游戏内显示，可选）</label>
+        <input type="file" id="iconfile" accept="image/png,image/jpeg,.png,.jpg,.jpeg">
+        <small style="display:block;color:var(--dim);font-size:11px;margin-top:4px">留空则自动沿用源包封面；无论来源都规整成 <b>128×128 PNG 的 pack_icon.png</b>（基岩规范要求正方形 / 2 的幂）。源包无封面时用中性占位图，<b>不再塞绿色棋盘</b>。</small>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label class="chk"><input type="checkbox" id="optSss" checked>
+        <span>输出次表面散射（MERS A 通道）<small>LabPBR _s 的 B 通道 65–255 → SSS；0–64 孔隙率丢弃</small></span></label>
+      <label class="chk"><input type="checkbox" id="optNormal">
+        <span>输出法线贴图（默认关）<small>官方包几乎不用；会重建 Z、丢弃 AO/高度；VV 的 item 禁用 heightmap</small></span></label>
+      <label class="chk"><input type="checkbox" id="optFlip">
+        <span>翻转法线 Y（源为 OpenGL 法线时开）<small>LabPBR 与 VV 同为 DirectX Y−，正常情况<b>不要</b>开</small></span></label>
+      <label class="chk"><input type="checkbox" id="optFallback" checked>
+        <span>为没有 _s 的基色写 pbr/global.json 回退值<small>不凭空生成贴图，用引擎回退设置兜底</small></span></label>
+      <label class="chk"><input type="checkbox" id="optStack">
+        <span>与现有 PBR 包叠加使用（推荐叠加 ENRO 时勾）<small>勾选后<b>不输出 pbr/global.json</b>——它是全局单例，两个 PBR 包都定义会冲突并报「资源包加载错误」；回退交给下层完整包提供</small></span></label>
+      <label class="chk"><input type="checkbox" id="optI18n" checked>
+        <span>生成多语言简介模板（zh_CN / en_US）<small>在包内写 <b>texts/languages.json + *.lang</b>，让 Java 原介绍与转换记录按游戏语言显示，作为 header.description 的本地化覆盖；只影响显示层，叠加不会报错</small></span></label>
+      <label class="chk"><input type="checkbox" id="optBed" checked>
+        <span>床贴图 UV 重排（Java 两岛 → 基岩单岛）<small>512² 床图对齐基岩几何体 UV：主岛删缝 + 床尾木架用基岩镂空规格（修复"床腿缺透明"）+ Java 木纹；基色/MERS/法线三者同步重排。非 512² 床图不受影响</small></span></label>
+    </div>
+    <div class="row"><button class="primary" id="run">开始转换 →</button></div>
+  </section>
+
+  <!-- ④ 进度 -->
+  <section id="s4" hidden>
+    <h2><span class="n">4</span>正在转换</h2>
+    <div class="bar"><i id="bar"></i></div>
+    <p class="hint" id="ptext" style="margin:0 0 8px">准备中…</p>
+    <div class="log" id="log"></div>
+  </section>
+
+  <!-- ⑤ 结果 -->
+  <section id="s5" hidden>
+    <h2><span class="n">5</span>完成</h2>
+    <div class="stats" id="rstats"></div>
+    <p class="hint" id="rsummary"></p>
+    <div class="row">
+      <button class="primary" id="dl">⬇ 下载 .mcpack</button>
+      <button id="dlreport">下载转换报告</button>
+      <button class="ghost" id="again">转换另一个</button>
+    </div>
+    <p class="hint" style="margin-top:12px">导入方式：把 .mcpack 用基岩版打开即可。若设备不支持 VV，包仍可加载但 PBR 效果不生效。</p>
+  </section>
+
+  <details>
+    <summary>技术说明 · 通道映射与格式（点击展开）</summary>
+    <p><b>LabPBR <code>_s</code> → MERS 四通道</b>（依据 <code>01_LabPBR材质标准.md</code>、<code>13_纹理文件通道与格式详解.md</code>）：</p>
+    <table>
+      <thead><tr><th>源</th><th>目标</th><th>公式</th></tr></thead>
+      <tbody>
+        <tr><td>R 感知平滑度 s</td><td>B 粗糙度</td><td><code>255·pow(1−s/255, 2)</code></td></tr>
+        <tr><td>G F0 / 金属 g</td><td>R 金属度</td><td><code>g≥230 ? 255 : 0</code>（F0 信息丢失）</td></tr>
+        <tr><td>A 自发光 a</td><td>G 自发光</td><td><code>a=255 ? 0 : round(a·255/254)</code></td></tr>
+        <tr><td>B SSS / 孔隙率 b</td><td>A 次表面散射</td><td><code>b≥65 ? (b−65)·255/190 : 0</code></td></tr>
+        <tr><td>—</td><td>金属/SSS 互斥</td><td><code>metal ≥ sss → sss = 0</code></td></tr>
+      </tbody>
+    </table>
+    <p><b>输出格式</b>：<code>_mers.tga</code> 必须是 32-bit <b>BGRA</b>、左下原点、8 alpha bits。PNG 改后缀无效，必须重排通道并翻转行序（Alpha=0 有语义，Photoshop 优化 PNG 会丢 RGB）。<code>texture_set.json</code> 固定 <code>format_version:"1.21.30"</code> + <code>color</code> + <code>metalness_emissive_roughness_subsurface</code>；<code>manifest.json</code> 必须带 <code>capabilities:["pbr"]</code>。解码全程为<b>非预乘</b>逐字节读取：<code>alpha=0</code> 像素的 R/G/B（平滑度/F0/SSS）原样保留，不会像 canvas 预乘那样被抹成 0。</p>
+    <p><b>法线</b>：LabPBR <code>_n</code> 的 B 存 AO、A 存高度，Z 用 <code>sqrt(1−dot(n.xy,n.xy))</code> 重建；DirectX Y− 与 VV 同向，不需翻转 G（该结论来自第三方转换器实现，非 Mojang 官方明文，故保留开关）。</p>
+    <p><b>已知信息损失</b>：介电质 F0（G 0–229）、孔隙率（B 0–64）、材质 AO、POM 高度 —— VV 无对应通道，转换报告会列出丢弃的像素数。</p>
+  </details>
+
+  <footer>
+    PBR2VV M0 原型 · 零后端、零权限、零外部资源（ZIP 读写自实现）<br>
+    设计文档与资料：<code>/workspace/灵动视效资料/14_LabPBR转VV安卓App设计.md</code>
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ============ 小工具 ============ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const frame = () => new Promise(r => requestAnimationFrame(() => r()));
+function uuid(){
+  try { if (crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+function setStep(n){
+  $$('.step').forEach((el,i) => {
+    el.className = 'step' + (i+1===n ? ' on' : (i+1<n ? ' done' : ''));
+  });
+}
+function log(msg, cls){
+  const el = $('#log');
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = msg;
+  el.appendChild(line); el.scrollTop = el.scrollHeight;
+}
+
+/* ============ ZIP 读（原生 DecompressionStream，无需外部库） ============ */
+async function unzipNative(ab){
+  const u8 = new Uint8Array(ab), dv = new DataView(ab);
+  let eocd = -1;
+  const lo = Math.max(0, u8.length - 65557);
+  for (let i = u8.length - 22; i >= lo; --i){
+    if (dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('不是有效的 ZIP（找不到 EOCD）');
+  const count = dv.getUint16(eocd + 10, true);
+  let off = dv.getUint32(eocd + 16, true);
+  const files = {};
+  const dec = new TextDecoder('utf-8');
+  for (let n = 0; n < count; ++n){
+    if (off + 46 > u8.length || dv.getUint32(off, true) !== 0x02014b50) break;
+    const method = dv.getUint16(off + 10, true);
+    const csize  = dv.getUint32(off + 20, true);
+    const nameLen = dv.getUint16(off + 28, true);
+    const extraLen = dv.getUint16(off + 30, true);
+    const cmtLen = dv.getUint16(off + 32, true);
+    const localOff = dv.getUint32(off + 42, true);
+    let name = dec.decode(u8.subarray(off + 46, off + 46 + nameLen));
+    const lNameLen = dv.getUint16(localOff + 26, true);
+    const lExtraLen = dv.getUint16(localOff + 28, true);
+    const dataOff = localOff + 30 + lNameLen + lExtraLen;
+    files[name] = { method, comp: u8.subarray(dataOff, dataOff + csize) };
+    off += 46 + nameLen + extraLen + cmtLen;
+  }
+  return {
+    names: Object.keys(files).filter(n => !n.endsWith('/')),
+    async get(name){
+      const f = files[name];
+      if (!f) return null;
+      if (f.method === 0) return f.comp.slice().buffer;
+      if (f.method === 8){
+        const ds = new DecompressionStream('deflate-raw');
+        const st = new Blob([f.comp]).stream().pipeThrough(ds);
+        return await new Response(st).arrayBuffer();
+      }
+      throw new Error('不支持的 ZIP 压缩方式: ' + f.method);
+    }
+  };
+}
+async function openZip(ab){
+  try { return await unzipNative(ab); }
+  catch(e){
+    if (String(e.message||e).includes('DecompressionStream') || typeof DecompressionStream === 'undefined')
+      throw new Error('当前浏览器不支持 deflate-raw 解压，请用较新的 Chromium / Safari 打开本页');
+    throw e;
+  }
+}
+
+/* ============ ZIP 写（store 模式，官方样例包也是这样存的） ============ */
+const CRC_T = (() => {
+  const t = new Uint32Array(256);
+  for (let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t;
+})();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = CRC_T[(c^u8[i])&0xFF] ^ (c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(entries){
+  const enc = new TextEncoder(), parts = [], central = [];
+  let offset = 0;
+  for (const e of entries){
+    const name = enc.encode(e.name), data = e.data, crc = crc32(data);
+    const lh = new Uint8Array(30 + name.length), ld = new DataView(lh.buffer);
+    ld.setUint32(0, 0x04034b50, true); ld.setUint16(4, 20, true);
+    ld.setUint16(6, 0x0800, true); ld.setUint16(8, 0, true);
+    ld.setUint32(14, crc, true); ld.setUint32(18, data.length, true); ld.setUint32(22, data.length, true);
+    ld.setUint16(26, name.length, true); lh.set(name, 30);
+    parts.push(lh, data);
+    const ch = new Uint8Array(46 + name.length), cd = new DataView(ch.buffer);
+    cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true);
+    cd.setUint16(8, 0x0800, true); cd.setUint16(10, 0, true);
+    cd.setUint32(16, crc, true); cd.setUint32(20, data.length, true); cd.setUint32(24, data.length, true);
+    cd.setUint16(28, name.length, true); cd.setUint32(42, offset, true);
+    ch.set(name, 46);
+    central.push(ch);
+    offset += lh.length + data.length;
+  }
+  const cdSize = central.reduce((a,b) => a + b.length, 0);
+  const eo = new Uint8Array(22), ed = new DataView(eo.buffer);
+  ed.setUint32(0, 0x06054b50, true);
+  ed.setUint16(8, entries.length, true); ed.setUint16(10, entries.length, true);
+  ed.setUint32(12, cdSize, true); ed.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, eo], { type:'application/octet-stream' });
+}
+
+/* ============ PNG 解码 / 生成、TGA 编码 ============ */
+/* 自实现 PNG 解码：必须绕开 canvas 的预乘 alpha。
+   LabPBR 的 _s 用 alpha 通道存自发光，大量像素 alpha=0；
+   一旦经过 canvas，alpha=0 区域的 RGB 会被抹成 0，R/G/B 三个材质通道全丢。
+   这里直接解 IHDR + IDAT + unfilter，拿到原始字节，零信息损失。 */
+async function decodePNG(bytes){
+  const b = new Uint8Array(bytes), dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  let p = 8, w=0, h=0, depth=0, ct=0, idat=[], plte=null, trns=null;
+  while (p + 8 <= b.length){
+    const len = dv.getUint32(p, false);          // PNG chunk 长度是大端（ZIP 才是小端）
+    const type = String.fromCharCode(b[p+4], b[p+5], b[p+6], b[p+7]);
+    const data = b.subarray(p+8, p+8+len);
+    if (type === 'IHDR'){ w=dv.getUint32(p+8,false); h=dv.getUint32(p+12,false); depth=data[8]; ct=data[9]; }
+    else if (type === 'IDAT') idat.push(data);
+    else if (type === 'PLTE') plte = data;
+    else if (type === 'tRNS') trns = data;
+    else if (type === 'IEND') break;
+    p += 12 + len;
+  }
+  if (!w || !h) throw new Error('PNG 头无效');
+  if (depth !== 8) throw new Error('仅支持 8-bit PNG（当前 ' + depth + '）');
+  const ch = {0:1, 2:3, 3:1, 4:2, 6:4}[ct];
+  if (!ch) throw new Error('不支持的 PNG 颜色类型 ' + ct);
+  let zlen = 0; for (const d of idat) zlen += d.length;
+  const z = new Uint8Array(zlen); let o = 0;
+  for (const d of idat){ z.set(d, o); o += d.length; }
+  // PNG 的 IDAT 是 zlib 流：2 字节头 + raw deflate + 4 字节 adler32。
+  // 统一走 deflate-raw（与 ZIP 解压同一种格式），跳过头尾即可。
+  const body = z.subarray(2, Math.max(2, z.length - 4));
+  const raw = new Uint8Array(await new Response(
+    new Blob([body]).stream().pipeThrough(new DecompressionStream('deflate-raw'))
+  ).arrayBuffer());
+  const stride = w*ch, out = new Uint8Array(w*h*4);
+  let prev = new Uint8Array(stride), cur = new Uint8Array(stride), q = 0;
+  for (let y=0; y<h; ++y){
+    const f = raw[q++];
+    for (let x=0; x<stride; ++x){
+      const a = x>=ch ? cur[x-ch] : 0, bb = prev[x], c = x>=ch ? prev[x-ch] : 0;
+      let v = raw[q++];
+      if (f===1) v=(v+a)&255;
+      else if (f===2) v=(v+bb)&255;
+      else if (f===3) v=(v+((a+bb)>>1))&255;
+      else if (f===4){
+        const pa=Math.abs(bb-c), pb=Math.abs(a-c), pc=Math.abs(a+bb-2*c);
+        const pr = (pa<=pb && pa<=pc) ? a : (pb<=pc ? bb : c);
+        v=(v+pr)&255;
+      }
+      cur[x]=v;
+    }
+    for (let x=0; x<w; ++x){
+      const s=x*ch, d=(y*w+x)*4;
+      if (ct===6){ out[d]=cur[s]; out[d+1]=cur[s+1]; out[d+2]=cur[s+2]; out[d+3]=cur[s+3]; }
+      else if (ct===2){ out[d]=cur[s]; out[d+1]=cur[s+1]; out[d+2]=cur[s+2]; out[d+3]=255; }
+      else if (ct===0){ out[d]=out[d+1]=out[d+2]=cur[s]; out[d+3]=255; }
+      else if (ct===4){ out[d]=out[d+1]=out[d+2]=cur[s]; out[d+3]=cur[s+1]; }
+      else {
+        const idx = cur[s]*3;
+        out[d]=plte?plte[idx]:0; out[d+1]=plte?plte[idx+1]:0; out[d+2]=plte?plte[idx+2]:0;
+        out[d+3]=(trns && cur[s]<trns.length) ? trns[cur[s]] : 255;
+      }
+    }
+    const tmp = prev; prev = cur; cur = tmp;
+  }
+  return { w, h, data: out };
+}
+/* 自实现 PNG 编码：绝不能走 canvas.toBlob。
+   canvas 会对 alpha=0 的像素做预乘，把 RGB 抹成 0 —— 而 LabPBR 的 _s 正是
+   用 alpha 存自发光，绝大多数像素 alpha=0，RGB 存的是平滑度/F0/SSS。
+   之前演示包走 canvas 生成，金属块与石头的 _s 全部退化成 (0,0,0,0)，
+   转换结果自然错得离谱（见 verify/verify_pack.py 的 D 组断言）。
+   这里改用 CompressionStream('deflate') 直接写 PNG 字节，零信息损失。 */
+async function encodePNGBytes(w, h, rgba){
+  const stride = w*4, raw = new Uint8Array(h*(stride+1));
+  for (let y=0;y<h;++y){
+    const o = y*(stride+1);
+    raw[o] = 0;                                   // filter: none
+    raw.set(rgba.subarray(y*stride, (y+1)*stride), o+1);
+  }
+  // PNG 的 IDAT 是 zlib 流，CompressionStream('deflate') 输出正是该格式
+  const idat = new Uint8Array(await new Response(
+    new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'))
+  ).arrayBuffer());
+  const chunk = (type, data) => {
+    const out = new Uint8Array(12 + data.length), dv = new DataView(out.buffer);
+    dv.setUint32(0, data.length, false);           // PNG chunk 长度是大端
+    for (let i=0;i<4;i++) out[4+i] = type.charCodeAt(i);
+    out.set(data, 8);
+    let c = 0xFFFFFFFF;                            // CRC32 覆盖 type + data
+    for (let i=4;i<8+data.length;i++) c = CRC_T[(c ^ out[i]) & 0xFF] ^ (c >>> 8);
+    dv.setUint32(8+data.length, (c ^ 0xFFFFFFFF) >>> 0, false);
+    return out;
+  };
+  const ihdr = new Uint8Array(13), hd = new DataView(ihdr.buffer);
+  hd.setUint32(0, w, false); hd.setUint32(4, h, false);
+  ihdr[8] = 8; ihdr[9] = 6;                       // 8-bit RGBA（color type 6）
+  const sig = new Uint8Array([137,80,78,71,13,10,26,10]);
+  return new Blob([sig, chunk('IHDR', ihdr), chunk('IDAT', idat),
+                   chunk('IEND', new Uint8Array(0))], { type:'image/png' });
+}
+async function makePNG(w, h, fn){
+  const rgba = new Uint8Array(w*h*4);
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const p = fn(x,y), i=(y*w+x)*4;
+    rgba[i]=p[0]; rgba[i+1]=p[1]; rgba[i+2]=p[2]; rgba[i+3]=p[3]===undefined?255:p[3];
+  }
+  return new Uint8Array(await (await encodePNGBytes(w, h, rgba)).arrayBuffer());
+}
+/* ---- 封面规整：基岩 [CPACKICON] 要求 pack_icon.png 为正方形、边长 2 的幂（≤256）且必须是 PNG。
+   Java 的 pack.png 没有这个约束（常见非正方形 / 任意尺寸），逐字节复制会把不合规图直接
+   带进基岩包，游戏里就显示成错误 / 缺失图标。统一：居中裁方 → 缩放到 128×128 RGBA PNG。 */
+const ICON_SIZE = 128;
+function normalizeIcon(src){
+  const s = Math.min(src.w, src.h);
+  const ox = Math.floor((src.w - s)/2), oy = Math.floor((src.h - s)/2);
+  const out = new Uint8Array(ICON_SIZE*ICON_SIZE*4);
+  for (let y=0; y<ICON_SIZE; ++y) for (let x=0; x<ICON_SIZE; ++x){
+    const sx = ox + Math.min(s-1, Math.floor(x*s/ICON_SIZE));
+    const sy = oy + Math.min(s-1, Math.floor(y*s/ICON_SIZE));
+    const si = (sy*src.w+sx)*4, di = (y*ICON_SIZE+x)*4;
+    out[di]=src.data[si]; out[di+1]=src.data[si+1]; out[di+2]=src.data[si+2]; out[di+3]=src.data[si+3];
+  }
+  return out;
+}
+async function decodeIcon(bytes, isPNG){
+  if (isPNG){
+    try { return await decodePNG(bytes); } catch(e){ /* 非常规 PNG 落到浏览器解码 */ }
+  }
+  const bmp = await createImageBitmap(new Blob([bytes], { type: isPNG ? 'image/png' : 'image/jpeg' }));
+  const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+  const ctx = c.getContext('2d'); ctx.drawImage(bmp, 0, 0);
+  const d = ctx.getImageData(0, 0, c.width, c.height);
+  bmp.close();
+  return { w:c.width, h:c.height, data:new Uint8Array(d.data.buffer) };
+}
+function placeholderIcon(){
+  // 明确是「未指定封面」的中性图标，不做成贴图 / 棋盘，避免被误认成材质加载失败
+  const n = ICON_SIZE, out = new Uint8Array(n*n*4);
+  for (let y=0; y<n; ++y) for (let x=0; x<n; ++x){
+    let c = [38,50,66];                                        // 深蓝灰底
+    if (x>=36 && x<92 && y>=36 && y<92) c = [206,219,235];   // 外层方块
+    if (x>=54 && x<74 && y>=54 && y<74) c = [38,50,66];      // 内层方块（包 / 层级意象）
+    const i=(y*n+x)*4;
+    out[i]=c[0]; out[i+1]=c[1]; out[i+2]=c[2]; out[i+3]=255;
+  }
+  return out;
+}
+async function makePNGRGBA(w, h, rgba){
+  return new Uint8Array(await (await encodePNGBytes(w, h, rgba)).arrayBuffer());
+}
+function encodeTGA(w, h, rgba){
+  const buf = new Uint8Array(18 + w*h*4), dv = new DataView(buf.buffer);
+  buf[2] = 2;                         // uncompressed true-color
+  dv.setUint16(12, w, true); dv.setUint16(14, h, true);
+  buf[16] = 32; buf[17] = 8;         // 32-bit, 8 alpha bits, 左下原点
+  let p = 18;
+  for (let y=h-1; y>=0; --y) for (let x=0; x<w; ++x){
+    const i = (y*w+x)*4;
+    buf[p++]=rgba[i+2]; buf[p++]=rgba[i+1]; buf[p++]=rgba[i]; buf[p++]=rgba[i+3];
+  }
+  return buf;
+}
+const enc = o => new TextEncoder().encode(JSON.stringify(o, null, 2));
+
+/* ============ 核心：LabPBR → MERS 通道换算 ============ */
+function labpbrToMers(r, g, b, a, opt){
+  const s = r/255;
+  let rough = Math.pow(1 - s, 2);                 // → MERS.B（01 号文档原文公式）
+  let metal = (g >= 230) ? 1 : 0;                 // → MERS.R
+  if (opt.metal === 'f0') metal = Math.min(1, g/229);
+  if (opt.metal === 'none') metal = 0;
+  const emis = (a === 255) ? 0 : (a/254);        // → MERS.G（255 是保留值）
+  let sss = (b >= 65) ? (b-65)/190 : 0;          // → MERS.A（0–64 孔隙率丢弃）
+  if (!opt.sss) sss = 0;
+  if (metal > sss) sss = 0;                      // 金属与 SSS 互斥：取大值，相等时优先 SSS
+  else if (sss > metal) metal = 0;
+  return [metal, emis, rough, sss].map(v => Math.round(Math.max(0, Math.min(1, v)) * 255));
+}
+function splitNormal(r, g, b, a, flipY){
+  const ng = flipY ? (255 - g) : g;              // OpenGL(Y+) → DirectX(Y-) 只需翻转 G
+  const x = r/255*2-1, y = ng/255*2-1;
+  const z = Math.sqrt(Math.max(0, 1 - x*x - y*y));   // 01 号文档：B 被 AO 占用，需重建 Z
+  return [r, ng, Math.round((z*0.5+0.5)*255)];
+}
+
+/* ============ 床 UV 重排（Java 两岛 → 基岩单连通岛）============
+   Java 床基色 512² 是「主岛(352×354) + 侧岛工字形(96×192)」两块；
+   基岩几何体 UV 按单连通岛布局采样，直接复制 Java 图会错位（枕头贴到木头上）。
+   用两个真包（ENRO Java ↔ 网易基岩）逐像素标定，主岛 3 段 100% 对齐：
+     · 主岛上半 y[0,176)          → 原位
+     · 主岛下半 y[224,354)        → 上移 48 到 y[176,306)（删掉 y[176,224) 的透明缝）
+     · 顶部木条 Java[176,224 / 176,304) → 基岩 [0,48 / 176,304)
+   底部床尾木架（y[304,400) x[0,192)）：
+     · 形状：bedLegSolid() 用基岩 geometry UV 镂空规格（16 色实测一致，IOU=1.0），
+       y%48<24 时实心区 x∈[24,72)∪[120,168)；否则整行实心。形状不动。
+     · 木纹：2026-11-16 三次订正 —— 改为【96×96 单元横向 tile】（sy=ty, sx=tx%96）。
+       侧岛 x[400,496)×y[0,192) 实为两个 96×96 单元；取 y[0,96) 原样横向铺两次，
+       碎块横纵比例完全不变（不旋转/不缩放），彻底消除实机反馈的"竖装拉伸"；
+       侧岛 25% 透明工字形区用同行横向最近不透明填充，消除白洞；三通道共用基色 alpha 同步。
+   基色 / MERS / 法线必须用同一套变换与几何 mask，否则颜色与材质通道错位。
+   只处理 512×512；其他尺寸原样返回（不做变换），避免误伤不同分辨率的床图。 */
+/* 基岩床尾木架镂空规格：返回 (tx,ty) 是否为实心地砖。96 行 × 192 列。 */
+function bedLegSolid(tx, ty){
+  const seg = (ty % 48) < 24 ? ((tx>=24 && tx<72) || (tx>=120 && tx<168)) : true;
+  return seg;
+}
+function reuvBed(src, w, h, maskAlpha){
+  // maskAlpha：基色 RGBA（含几何 alpha）。基色自身调用时省略，用 src 的 alpha；
+  // MERS / 法线调用时传入基色，避免用各自的 alpha（SSS / 恒 255）误判侧岛透明区。
+  if (w !== 512 || h !== 512) return null;
+  const out = new Uint8Array(512*512*4);
+  const geo = maskAlpha || src;                      // 统一用基色 alpha 判断源透明
+  const copyRect = (sx,sy,dx,dy,cw,ch) => {
+    for (let y=0; y<ch; ++y){
+      const so=(sy+y)*512*4 + sx*4, d0=(dy+y)*512*4 + dx*4;
+      for (let x=0; x<cw*4; ++x) out[d0+x]=src[so+x];
+    }
+  };
+  copyRect(0,0, 0,0, 352,176);          // 主岛上半
+  copyRect(0,224, 0,176, 352,130);      // 主岛下半上移 48
+  copyRect(176,176, 176,0, 128,48);     // 顶部木条
+
+  /* 底部床尾木架（2026-11-16 三次订正 —— 彻底消除"竖装拉伸"）：
+     用户实机二次反馈转置方案仍有"竖装拉伸、不能完全显示木板贴图"。
+     真包实证定位到根因：侧岛 x[400,496)×y[0,192) 是【96 宽 × 192 高 = 两个 96×96 单元】，
+     之前无论 CCW 还是转置都要把 96×192 塞进 192×96，必然交换/挤压横纵轴 →
+     碎块被拉成竖条 + 25% 工字形透明落进实心腿 → 拉伸+白洞。
+     新方案（本版）：取侧岛【一个 96×96 单元 y[0,96)】，横向 tile 两次铺满 192 宽，
+       · 碎块横纵比例完全不变（不旋转、不缩放）→ 彻底无拉伸，木纹与原版同为碎块交错；
+       · 透明像素用【同行横向最近不透明】填充（沿 x 方向，木纹横向连续）；
+       · 镂空形状仍由 bedLegSolid() 决定（与基岩参考 IOU=1.0，保持不变）；
+       · 三通道共用 geo alpha，天然同步。
+     实测底部平均差 15.37 → 14.32，碎块方形、交错、无竖条纹、无白洞。 */
+  const SIDE_X = 400;
+  const isOpaque = (sy, sx) => geo[((sy)*512 + SIDE_X + sx)*4 + 3] >= 128;
+  // 在 96×96 单元内，预计算每行(sy)每列(sx)的最近不透明列，横向填充 O(96*96)。
+  const fillX = new Int16Array(96*96);
+  for (let sy=0; sy<96; ++sy){
+    let last = -1;
+    for (let sx=0; sx<96; ++sx){ if (isOpaque(sy,sx)) last = sx; fillX[sy*96+sx] = last; }
+    last = -1;
+    for (let sx=95; sx>=0; --sx){ if (isOpaque(sy,sx)) last = sx; if (fillX[sy*96+sx] < 0) fillX[sy*96+sx] = last; }
+  }
+  for (let ty=0; ty<96; ++ty){
+    for (let tx=0; tx<192; ++tx){
+      if (!bedLegSolid(tx, ty)) continue;           // 基岩镂空处保持透明
+      // tile96：源单元 (sy=ty, sx=tx%96)，横向重复两次，碎块比例不变
+      const sy = ty;
+      let sx = tx % 96;
+      if (!isOpaque(sy, sx)) sx = fillX[sy*96+sx] >= 0 ? fillX[sy*96+sx] : sx;
+      const so = (sy*512 + SIDE_X + sx)*4;
+      const d0 = ((304+ty)*512 + tx)*4;
+      out[d0]   = src[so];
+      out[d0+1] = src[so+1];
+      out[d0+2] = src[so+2];
+      out[d0+3] = 255;                               // 实心区完全不透明
+    }
+  }
+  return out;
+}
+
+/* ============ 扫描与映射 ============ */
+/* Java 资源包纹理基名 → 基岩版纹理基名。由 mapping/build_map.py 生成，
+   依据官方 bedrock-samples v1.26.70.23-preview 实物 + 社区清单，共 484 条。
+   只收录「需要改名」的条目；精确同名无需列出。详见 15_纹理名映射表.md。 */
+const BUILTIN_MAP = {"acacia_boat":"boat_acacia","acacia_door":"door_acacia","acacia_door_bottom":"door_acacia_lower","acacia_door_top":"door_acacia_upper","acacia_leaves":"leaves_acacia","acacia_log":"log_acacia","acacia_log_top":"log_acacia_top","acacia_planks":"planks_acacia","acacia_sapling":"sapling_acacia","acacia_sign":"sign_acacia","activator_rail":"rail_activator","allay_spawn_egg":"spawn_egg_allay","allium":"flower_allium","andesite":"stone_andesite","anvil":"anvil_base","anvil_top":"anvil_top_damaged_0","armadillo_spawn_egg":"spawn_egg_armadillo","attached_melon_stem":"melon_stem_connected","attached_pumpkin_stem":"pumpkin_stem_connected","axolotl_bucket":"bucket_axolotl","axolotl_spawn_egg":"spawn_egg_axolotl","azure_bluet":"flower_houstonia","baked_potato":"potato_baked","bamboo_small_leaves":"bamboo_small_leaf","bamboo_stalk":"bamboo_stem","bat_spawn_egg":"spawn_egg_bat","bee_spawn_egg":"spawn_egg_bee","beetroot_seeds":"seeds_beetroot","beetroots_stage0":"beetroots_stage_0","beetroots_stage1":"beetroots_stage_1","beetroots_stage2":"beetroots_stage_2","beetroots_stage3":"beetroots_stage_3","birch_boat":"boat_birch","birch_door":"door_birch","birch_door_bottom":"door_birch_lower","birch_door_top":"door_birch_upper","birch_leaves":"leaves_birch","birch_log":"log_birch","birch_log_top":"log_birch_top","birch_planks":"planks_birch","birch_sapling":"sapling_birch","birch_sign":"sign_birch","black_bundle":"bundle_black","black_bundle_open_back":"bundle_black_open_back","black_bundle_open_front":"bundle_black_open_front","black_concrete":"concrete_black","black_concrete_powder":"concrete_powder_black","black_glazed_terracotta":"glazed_terracotta_black","black_harness":"harness_black","black_shulker_box":"shulker_top_black","black_stained_glass":"glass_black","black_stained_glass_pane_top":"glass_pane_top_black","black_terracotta":"hardened_clay_stained_black","black_wool":"wool_colored_black","blaze_spawn_egg":"spawn_egg_blaze","blue_bundle":"bundle_blue","blue_bundle_open_back":"bundle_blue_open_back","blue_bundle_open_front":"bundle_blue_open_front","blue_concrete":"concrete_blue","blue_concrete_powder":"concrete_powder_blue","blue_glazed_terracotta":"glazed_terracotta_blue","blue_harness":"harness_blue","blue_orchid":"flower_blue_orchid","blue_shulker_box":"shulker_top_blue","blue_stained_glass":"glass_blue","blue_stained_glass_pane_top":"glass_pane_top_blue","blue_terracotta":"hardened_clay_stained_blue","blue_wool":"wool_colored_blue","bogged_spawn_egg":"spawn_egg_bogged","breeze_spawn_egg":"spawn_egg_breeze","bricks":"brick","brown_bundle":"bundle_brown","brown_bundle_open_back":"bundle_brown_open_back","brown_bundle_open_front":"bundle_brown_open_front","brown_concrete":"concrete_brown","brown_concrete_powder":"concrete_powder_brown","brown_glazed_terracotta":"glazed_terracotta_brown","brown_harness":"harness_brown","brown_mushroom":"mushroom_brown","brown_mushroom_block":"mushroom_block_skin_brown","brown_shulker_box":"shulker_top_brown","brown_stained_glass":"glass_brown","brown_stained_glass_pane_top":"glass_pane_top_brown","brown_terracotta":"hardened_clay_stained_brown","brown_wool":"wool_colored_brown","camel_spawn_egg":"spawn_egg_camel","carrots_stage0":"carrots_stage_0","carrots_stage1":"carrots_stage_1","carrots_stage2":"carrots_stage_2","carved_pumpkin":"pumpkin_face_off","cat_spawn_egg":"spawn_egg_cat","cave_spider_spawn_egg":"spawn_egg_cave_spider","chainmail_layer_1":"chain_1","chainmail_layer_2":"chain_2","chest_minecart":"minecart_chest","chicken_spawn_egg":"spawn_egg_chicken","chipped_anvil_top":"anvil_top_damaged_1","chiseled_quartz_block":"quartz_block_chiseled","chiseled_quartz_block_top":"quartz_block_chiseled_top","cobweb":"web","cocoa_stage0":"cocoa_stage_0","cocoa_stage1":"cocoa_stage_1","cocoa_stage2":"cocoa_stage_2","cod_bucket":"bucket_cod","cod_spawn_egg":"spawn_egg_cod","command_block_minecart":"minecart_command_block","cooked_beef":"beef_cooked","cooked_chicken":"chicken_cooked","cooked_mutton":"mutton_cooked","cooked_porkchop":"porkchop_cooked","cooked_rabbit":"rabbit_cooked","cornflower":"flower_cornflower","cow_spawn_egg":"spawn_egg_cow","creaking_spawn_egg":"spawn_egg_creaking","creeper_spawn_egg":"spawn_egg_creeper","crimson_sign":"sign_crimson","cut_red_sandstone":"red_sandstone_smooth","cut_sandstone":"sandstone_smooth","cyan_bundle":"bundle_cyan","cyan_bundle_open_back":"bundle_cyan_open_back","cyan_bundle_open_front":"bundle_cyan_open_front","cyan_concrete":"concrete_cyan","cyan_concrete_powder":"concrete_powder_cyan","cyan_glazed_terracotta":"glazed_terracotta_cyan","cyan_harness":"harness_cyan","cyan_shulker_box":"shulker_top_cyan","cyan_stained_glass":"glass_cyan","cyan_stained_glass_pane_top":"glass_pane_top_cyan","cyan_terracotta":"hardened_clay_stained_cyan","cyan_wool":"wool_colored_cyan","damaged_anvil_top":"anvil_top_damaged_2","dandelion":"flower_dandelion","dark_oak_boat":"boat_dark_oak","dark_oak_door":"door_dark_oak","dark_oak_door_bottom":"door_dark_oak_lower","dark_oak_door_top":"door_dark_oak_upper","dark_oak_leaves":"leaves_big_oak","dark_oak_log":"log_big_oak","dark_oak_log_top":"log_big_oak_top","dark_oak_planks":"planks_big_oak","dark_prismarine":"prismarine_dark","dead_bush":"deadbush","detector_rail":"rail_detector","diamond_layer_1":"diamond_1","diamond_layer_2":"diamond_2","diorite":"stone_diorite","dolphin_spawn_egg":"spawn_egg_dolphin","donkey_spawn_egg":"spawn_egg_donkey","drowned_spawn_egg":"spawn_egg_drowned","elder_guardian_spawn_egg":"spawn_egg_elder_guardian","elytra_broken":"broken_elytra","enchanted_book":"book_enchanted","end_portal_frame_eye":"endframe_eye","end_portal_frame_side":"endframe_side","end_portal_frame_top":"endframe_top","ender_dragon_spawn_egg":"spawn_egg_ender_dragon","enderman_spawn_egg":"spawn_egg_enderman","endermite_spawn_egg":"spawn_egg_endermite","evoker_spawn_egg":"spawn_egg_evoker","farmland":"farmland_dry","farmland_moist":"farmland_wet","fermented_spider_eye":"spider_eye_fermented","filled_map":"map_filled","fox_spawn_egg":"spawn_egg_fox","frog_spawn_egg":"spawn_egg_frog","furnace_minecart":"minecart_furnace","ghast_spawn_egg":"spawn_egg_ghast","glow_squid_spawn_egg":"spawn_egg_glow_squid","goat_spawn_egg":"spawn_egg_goat","golden_apple":"apple_golden","golden_carrot":"carrot_golden","golden_layer_1":"gold_1","golden_layer_2":"gold_2","granite":"stone_granite","grass_block_side":"grass_side","grass_block_top":"grass_top","gray_bundle":"bundle_gray","gray_bundle_open_back":"bundle_gray_open_back","gray_bundle_open_front":"bundle_gray_open_front","gray_concrete":"concrete_gray","gray_concrete_powder":"concrete_powder_gray","gray_glazed_terracotta":"glazed_terracotta_gray","gray_harness":"harness_gray","gray_shulker_box":"shulker_top_gray","gray_stained_glass":"glass_gray","gray_stained_glass_pane_top":"glass_pane_top_gray","gray_terracotta":"hardened_clay_stained_gray","gray_wool":"wool_colored_gray","green_bundle":"bundle_green","green_bundle_open_back":"bundle_green_open_back","green_bundle_open_front":"bundle_green_open_front","green_concrete":"concrete_green","green_concrete_powder":"concrete_powder_green","green_glazed_terracotta":"glazed_terracotta_green","green_harness":"harness_green","green_shulker_box":"shulker_top_green","green_stained_glass":"glass_green","green_stained_glass_pane_top":"glass_pane_top_green","green_terracotta":"hardened_clay_stained_green","green_wool":"wool_colored_green","guardian_spawn_egg":"spawn_egg_guardian","happy_ghast_spawn_egg":"spawn_egg_happy_ghast","hoglin_spawn_egg":"spawn_egg_hoglin","hopper_minecart":"minecart_hopper","horse_spawn_egg":"spawn_egg_horse","husk_spawn_egg":"spawn_egg_husk","iron_door":"door_iron","iron_golem_spawn_egg":"spawn_egg_iron_golem","iron_layer_1":"iron_1","iron_layer_2":"iron_2","jack_o_lantern":"pumpkin_face_on","jungle_boat":"boat_jungle","jungle_door":"door_jungle","jungle_door_bottom":"door_jungle_lower","jungle_door_top":"door_jungle_upper","jungle_leaves":"leaves_jungle","jungle_log":"log_jungle","jungle_log_top":"log_jungle_top","jungle_planks":"planks_jungle","jungle_sapling":"sapling_jungle","jungle_sign":"sign_jungle","large_fern_bottom":"double_plant_fern_bottom","large_fern_top":"double_plant_fern_top","lava_bucket":"bucket_lava","leather_layer_1":"cloth_1","leather_layer_2":"cloth_2","light_blue_bundle":"bundle_light_blue","light_blue_bundle_open_back":"bundle_light_blue_open_back","light_blue_bundle_open_front":"bundle_light_blue_open_front","light_blue_concrete":"concrete_light_blue","light_blue_concrete_powder":"concrete_powder_light_blue","light_blue_glazed_terracotta":"glazed_terracotta_light_blue","light_blue_harness":"harness_light_blue","light_blue_shulker_box":"shulker_top_light_blue","light_blue_stained_glass":"glass_light_blue","light_blue_stained_glass_pane_top":"glass_pane_top_light_blue","light_blue_terracotta":"hardened_clay_stained_light_blue","light_blue_wool":"wool_colored_light_blue","light_gray_bundle":"bundle_light_gray","light_gray_bundle_open_back":"bundle_light_gray_open_back","light_gray_bundle_open_front":"bundle_light_gray_open_front","light_gray_concrete":"concrete_silver","light_gray_concrete_powder":"concrete_powder_silver","light_gray_glazed_terracotta":"glazed_terracotta_silver","light_gray_harness":"harness_light_gray","light_gray_shulker_box":"shulker_top_silver","light_gray_stained_glass":"glass_silver","light_gray_stained_glass_pane_top":"glass_pane_top_silver","light_gray_terracotta":"hardened_clay_stained_silver","light_gray_wool":"wool_colored_silver","lilac_bottom":"double_plant_syringa_bottom","lilac_top":"double_plant_syringa_top","lily_of_the_valley":"flower_lily_of_the_valley","lily_pad":"waterlily","lime_bundle":"bundle_lime","lime_bundle_open_back":"bundle_lime_open_back","lime_bundle_open_front":"bundle_lime_open_front","lime_concrete":"concrete_lime","lime_concrete_powder":"concrete_powder_lime","lime_glazed_terracotta":"glazed_terracotta_lime","lime_harness":"harness_lime","lime_shulker_box":"shulker_top_lime","lime_stained_glass":"glass_lime","lime_stained_glass_pane_top":"glass_pane_top_lime","lime_terracotta":"hardened_clay_stained_lime","lime_wool":"wool_colored_lime","llama_spawn_egg":"spawn_egg_llama","magenta_bundle":"bundle_magenta","magenta_bundle_open_back":"bundle_magenta_open_back","magenta_bundle_open_front":"bundle_magenta_open_front","magenta_concrete":"concrete_magenta","magenta_concrete_powder":"concrete_powder_magenta","magenta_glazed_terracotta":"glazed_terracotta_magenta","magenta_harness":"harness_magenta","magenta_shulker_box":"shulker_top_magenta","magenta_stained_glass":"glass_magenta","magenta_stained_glass_pane_top":"glass_pane_top_magenta","magenta_terracotta":"hardened_clay_stained_magenta","magenta_wool":"wool_colored_magenta","magma_cube_spawn_egg":"spawn_egg_magma_cube","melon_seeds":"seeds_melon","melon_stem":"melon_stem_disconnected","milk_bucket":"bucket_milk","mooshroom_spawn_egg":"spawn_egg_mooshroom","mossy_cobblestone":"cobblestone_mossy","mule_spawn_egg":"spawn_egg_mule","mushroom_stem":"mushroom_block_skin_stem","nether_wart_stage0":"nether_wart_stage_0","nether_wart_stage1":"nether_wart_stage_1","nether_wart_stage2":"nether_wart_stage_2","netherite_layer_1":"netherite_1","netherite_layer_2":"netherite_2","note_block":"noteblock","oak_boat":"boat_oak","oak_door_bottom":"door_wood_lower","oak_door_top":"door_wood_upper","oak_leaves":"leaves_oak","oak_log":"log_oak","oak_log_top":"log_oak_top","oak_planks":"planks_oak","oak_sapling":"sapling_oak","ocelot_spawn_egg":"spawn_egg_ocelot","orange_bundle":"bundle_orange","orange_bundle_open_back":"bundle_orange_open_back","orange_bundle_open_front":"bundle_orange_open_front","orange_concrete":"concrete_orange","orange_concrete_powder":"concrete_powder_orange","orange_glazed_terracotta":"glazed_terracotta_orange","orange_harness":"harness_orange","orange_shulker_box":"shulker_top_orange","orange_stained_glass":"glass_orange","orange_stained_glass_pane_top":"glass_pane_top_orange","orange_terracotta":"hardened_clay_stained_orange","orange_tulip":"flower_tulip_orange","orange_wool":"wool_colored_orange","oxeye_daisy":"flower_oxeye_daisy","packed_ice":"ice_packed","panda_spawn_egg":"spawn_egg_panda","parrot_spawn_egg":"spawn_egg_parrot","peony_bottom":"double_plant_paeonia_bottom","peony_top":"double_plant_paeonia_top","phantom_spawn_egg":"spawn_egg_phantom","pig_spawn_egg":"spawn_egg_pig","piglin_brute_spawn_egg":"spawn_egg_piglin_brute","piglin_spawn_egg":"spawn_egg_piglin","pillager_spawn_egg":"spawn_egg_pillager","pink_bundle":"bundle_pink","pink_bundle_open_back":"bundle_pink_open_back","pink_bundle_open_front":"bundle_pink_open_front","pink_concrete":"concrete_pink","pink_concrete_powder":"concrete_powder_pink","pink_glazed_terracotta":"glazed_terracotta_pink","pink_harness":"harness_pink","pink_shulker_box":"shulker_top_pink","pink_stained_glass":"glass_pink","pink_stained_glass_pane_top":"glass_pane_top_pink","pink_terracotta":"hardened_clay_stained_pink","pink_tulip":"flower_tulip_pink","pink_wool":"wool_colored_pink","poisonous_potato":"potato_poisonous","polar_bear_spawn_egg":"spawn_egg_polar_bear","polished_andesite":"stone_andesite_smooth","polished_diorite":"stone_diorite_smooth","polished_granite":"stone_granite_smooth","popped_chorus_fruit":"chorus_fruit_popped","poppy":"flower_rose","potatoes_stage0":"potatoes_stage_0","potatoes_stage1":"potatoes_stage_1","potatoes_stage2":"potatoes_stage_2","potatoes_stage3":"potatoes_stage_3","powder_snow_bucket":"bucket_powder_snow","powered_rail":"rail_golden","pufferfish_bucket":"bucket_pufferfish","pufferfish_spawn_egg":"spawn_egg_pufferfish","pumpkin_seeds":"seeds_pumpkin","pumpkin_stem":"pumpkin_stem_disconnected","purple_bundle":"bundle_purple","purple_bundle_open_back":"bundle_purple_open_back","purple_bundle_open_front":"bundle_purple_open_front","purple_concrete":"concrete_purple","purple_concrete_powder":"concrete_powder_purple","purple_glazed_terracotta":"glazed_terracotta_purple","purple_harness":"harness_purple","purple_shulker_box":"shulker_top_purple","purple_stained_glass":"glass_purple","purple_stained_glass_pane_top":"glass_pane_top_purple","purple_terracotta":"hardened_clay_stained_purple","purple_wool":"wool_colored_purple","rabbit_spawn_egg":"spawn_egg_rabbit","rail":"rail_normal","ravager_spawn_egg":"spawn_egg_ravager","red_bundle":"bundle_red","red_bundle_open_back":"bundle_red_open_back","red_bundle_open_front":"bundle_red_open_front","red_concrete":"concrete_red","red_concrete_powder":"concrete_powder_red","red_glazed_terracotta":"glazed_terracotta_red","red_harness":"harness_red","red_mushroom":"mushroom_red","red_mushroom_block":"mushroom_block_skin_red","red_shulker_box":"shulker_top_red","red_stained_glass":"glass_red","red_stained_glass_pane_top":"glass_pane_top_red","red_terracotta":"hardened_clay_stained_red","red_tulip":"flower_tulip_red","red_wool":"wool_colored_red","rose":"flower_rose","rose_bush_bottom":"double_plant_rose_bottom","rose_bush_top":"double_plant_rose_top","salmon_bucket":"bucket_salmon","salmon_spawn_egg":"spawn_egg_salmon","sheep_spawn_egg":"spawn_egg_sheep","short_grass":"tallgrass","shulker_spawn_egg":"spawn_egg_shulker","silverfish_spawn_egg":"spawn_egg_silverfish","skeleton_horse_spawn_egg":"spawn_egg_skeleton_horse","skeleton_spawn_egg":"spawn_egg_skeleton","slime_spawn_egg":"spawn_egg_slime","sniffer_spawn_egg":"spawn_egg_sniffer","snow_golem_spawn_egg":"spawn_egg_snow_golem","spawner":"mob_spawner","spider_spawn_egg":"spawn_egg_spider","spruce_boat":"boat_spruce","spruce_door":"door_spruce","spruce_door_bottom":"door_spruce_lower","spruce_door_top":"door_spruce_upper","spruce_leaves":"leaves_spruce","spruce_log":"log_spruce","spruce_log_top":"log_spruce_top","spruce_planks":"planks_spruce","spruce_sapling":"sapling_spruce","spruce_sign":"sign_spruce","squid_spawn_egg":"spawn_egg_squid","stone_bricks":"stonebrick","stray_spawn_egg":"spawn_egg_stray","strider_spawn_egg":"spawn_egg_strider","sunflower_back":"double_plant_sunflower_back","sunflower_bottom":"double_plant_sunflower_bottom","sunflower_front":"double_plant_sunflower_front","sunflower_top":"double_plant_sunflower_top","tadpole_bucket":"bucket_tadpole","tadpole_spawn_egg":"spawn_egg_tadpole","tall_grass_bottom":"double_plant_grass_bottom","tall_grass_top":"double_plant_grass_top","tnt_minecart":"minecart_tnt","torchflower_crop_stage0":"torchflower_crop_stage_0","torchflower_crop_stage1":"torchflower_crop_stage_1","trader_llama_spawn_egg":"spawn_egg_trader_llama","turtle_layer_1":"turtle_1","turtle_spawn_egg":"spawn_egg_turtle","vex_spawn_egg":"spawn_egg_vex","villager_spawn_egg":"spawn_egg_villager","vindicator_spawn_egg":"spawn_egg_vindicator","wandering_trader_spawn_egg":"spawn_egg_wandering_trader","warden_spawn_egg":"spawn_egg_warden","warped_sign":"sign_warped","water_bucket":"bucket_water","wet_sponge":"sponge_wet","wheat_seeds":"seeds_wheat","wheat_stage0":"wheat_stage_0","wheat_stage1":"wheat_stage_1","wheat_stage2":"wheat_stage_2","wheat_stage3":"wheat_stage_3","wheat_stage4":"wheat_stage_4","wheat_stage5":"wheat_stage_5","wheat_stage6":"wheat_stage_6","wheat_stage7":"wheat_stage_7","white_bundle":"bundle_white","white_bundle_open_back":"bundle_white_open_back","white_bundle_open_front":"bundle_white_open_front","white_concrete":"concrete_white","white_concrete_powder":"concrete_powder_white","white_glazed_terracotta":"glazed_terracotta_white","white_harness":"harness_white","white_shulker_box":"shulker_top_white","white_stained_glass":"glass_white","white_stained_glass_pane_top":"glass_pane_top_white","white_terracotta":"hardened_clay_stained_white","white_tulip":"flower_tulip_white","white_wool":"wool_colored_white","witch_spawn_egg":"spawn_egg_witch","wither_rose":"flower_wither_rose","wither_skeleton_spawn_egg":"spawn_egg_wither_skeleton","wither_spawn_egg":"spawn_egg_wither","wolf_spawn_egg":"spawn_egg_wolf","writable_book":"book_writable","written_book":"book_written","yellow_bundle":"bundle_yellow","yellow_bundle_open_back":"bundle_yellow_open_back","yellow_bundle_open_front":"bundle_yellow_open_front","yellow_concrete":"concrete_yellow","yellow_concrete_powder":"concrete_powder_yellow","yellow_glazed_terracotta":"glazed_terracotta_yellow","yellow_harness":"harness_yellow","yellow_shulker_box":"shulker_top_yellow","yellow_stained_glass":"glass_yellow","yellow_stained_glass_pane_top":"glass_pane_top_yellow","yellow_terracotta":"hardened_clay_stained_yellow","yellow_wool":"wool_colored_yellow","zoglin_spawn_egg":"spawn_egg_zoglin","zombie_horse_spawn_egg":"spawn_egg_zombie_horse","zombie_spawn_egg":"spawn_egg_zombie","zombie_villager_spawn_egg":"spawn_egg_zombie_villager","zombified_piglin_spawn_egg":"spawn_egg_zombified_piglin"};
+const BUILTIN_MAP_SIZE = 484;
+/* 目录重定向：少数贴图在基岩位于 blocks/ 的【子目录】，Java 却在 blocks/ 根。
+   name_map.json 只存「文件名→文件名」（不含目录），因此这里按 Java 基名补一层目标子目录。
+   实证（官方 bedrock-samples + 网易基岩同款包，两包路径一致）：
+     · warped_planks / crimson_planks → textures/blocks/huge_fungus/（文件名不变）
+   注意 key 是【Java 源基名】，value 是相对 textures/ 的目标目录。 */
+const DIR_REDIRECT = {
+  warped_planks: 'blocks/huge_fungus',
+  crimson_planks: 'blocks/huge_fungus'
+};
+/* 基岩支持 PBR 的贴图目录。地图(textures/map)、界面(textures/ui)、字体、
+   画(painting)、群系着色表(colormap) 等在基岩端没有 texture_set 定义，
+   转过去只会产出无效文件，因此显式跳过并计入报告。 */
+const PBR_DIRS = new Set(['blocks','items','entity','particle','models/armor']);
+/* 基岩除 blocks/items 外，entity 下的子目录（entity/bed、entity/equipment/* 等）
+   同样带 .texture_set.json（官方包实测 851 个 entity texture_set），不能只认精确目录名。 */
+function isPBRDir(dir){
+  // blocks/ 下所有子目录（huge_fungus 等）在基岩同样带 .texture_set.json，必须放行，
+  // 否则目录重定向到 blocks/huge_fungus 的反倒会被当非 PBR 目录跳过。
+  return PBR_DIRS.has(dir) || dir.startsWith('entity/') || dir.startsWith('blocks/');
+}
+
+/* Java 1.21.2+ 把盔甲纹理从 textures/models/armor/{mat}_layer_{1,2}.png
+   改成 textures/entity/equipment/{humanoid | humanoid_leggings | humanoid_baby}/{mat}.png。
+   基岩仍是 textures/models/armor/{mat}_{1 | 2 | baby}，且材质名不一一对应：
+   chainmail→chain（幼年却叫 chainmail_baby）、turtle_scute→turtle（幼年回 turtle_scute_baby）。
+   leather_overlay 是 Java 的染色叠加层，基岩没有独立文件，跳过。 */
+const ARMOR_DIRS = {
+  'entity/equipment/humanoid':          { suf:'_1',    baby:false },
+  'entity/equipment/humanoid_leggings': { suf:'_2',    baby:false },
+  'entity/equipment/humanoid_baby':     { suf:'_baby', baby:true  },
+};
+const ARMOR_MAT = { leather:'leather', chainmail:'chain', copper:'copper', gold:'gold',
+  iron:'iron', diamond:'diamond', netherite:'netherite', turtle_scute:'turtle', elytra:'elytra' };
+const ARMOR_MAT_BABY = { leather:'leather', chainmail:'chainmail', copper:'copper', gold:'gold',
+  iron:'iron', diamond:'diamond', netherite:'netherite', turtle_scute:'turtle_scute' };
+
+/* 官方只提供 .tga 的方块基色（bedrock-samples v1.26.70 实物实测，当前白名单 50 项）。
+   基岩按 .tga > .png > .jpg 的扩展名优先级取图（Mojang Texture Sets 文档），
+   这些目标若写成 .png，会被官方自带的 .tga 压制，表现为「贴图没转换成功」。
+   2026-11-17 补 tallgrass：官方 tallgrass 同时有 16² tga 占位与 png，color 无扩展名引用，
+   写 png 会被 16² tga 压制；改写 128² tga 靠叠加包优先级覆盖。 */
+const TGA_BASE = new Set(['cactus_bottom','cactus_side','cactus_top',
+  'double_plant_fern_bottom','double_plant_fern_top','double_plant_grass_bottom','double_plant_grass_top',
+  'double_plant_syringa_bottom','double_plant_syringa_top','fern','fern_carried','grass_side',
+  'grindstone_pivot','grindstone_round','grindstone_side','kelp_a','kelp_b','kelp_c','kelp_d','kelp_top','kelp_top_bulb',
+  'leaves_acacia','leaves_acacia_carried','leaves_big_oak','leaves_big_oak_carried','leaves_birch','leaves_birch_carried',
+  'leaves_jungle','leaves_jungle_carried','leaves_oak','leaves_oak_carried','leaves_spruce','leaves_spruce_carried',
+  'mangrove_leaves','mangrove_leaves_carried','pale_oak_leaves','reeds',
+  'scaffolding_bottom','scaffolding_side','scaffolding_top',
+  'seagrass_doubletall_bottom_a','seagrass_doubletall_bottom_b','seagrass_doubletall_top_a','seagrass_doubletall_top_b',
+  'stonecutter2_saw','tallgrass','tallgrass_carried',
+  // 盔甲：基岩的皮革三件是 .tga 基色（其余盔甲是 png），写 png 会被官方 tga 压制
+  'leather_1','leather_2','leather_baby']);
+
+/* Java 的 _overlay 叠加层：基岩没有独立 overlay 贴图文件，作者把叠加效果
+   烘焙进基色。实测（网易基岩包 grass_side.tga vs Java 基色/合成）：
+   纯基色差 13.20；基色+overlay 合成差 0.12 → 基岩用的就是合成图。
+   故转换 base 时须把 overlay alpha 合成进基色，并跳过 overlay 组本身。
+   结构：目标基岩基名 → Java overlay 源基名（相对同目录，不含 _s/_n）。 */
+const OVERLAY_SRC = { grass_side: 'grass_block_side_overlay' };
+// 这些 Java 源基名是纯叠加层，基岩无对应文件 → 跳过（由 base 组合成吸收）
+const OVERLAY_ONLY = new Set(['grass_block_side_overlay']);
+
+function mapName(raw, custom){
+  const lower = raw.toLowerCase();
+  // 目录沿用 Java 原目录，只做 block→blocks、item→items 的改写。
+  // 旧版把「非 item/entity/particle/block」一律塞进 blocks——盔甲
+  // (textures/models/armor/) 与地图 (textures/map/) 因此被写到 textures/blocks/
+  // 下，基岩不会读取，属于硬性失效（用户实测「盔甲/地图没转换成功」即此因）。
+  let dir = 'blocks';
+  const dm = lower.match(/\/textures\/(.+)\/[^\/]+$/);
+  if (dm) dir = dm[1].replace(/^block$/, 'blocks').replace(/^item$/, 'items');
+  const file = raw.split('/').pop();
+  const base = file.replace(/(_s|_n)?\.png$/i, '');
+  // 新式装备目录（Java 1.21.2+）→ 基岩 models/armor，并改写材质名与层号
+  const ad = ARMOR_DIRS[dir];
+  if (ad){
+    const mat = (ad.baby ? ARMOR_MAT_BABY : ARMOR_MAT)[base];
+    // 查不到材质的（如 leather_overlay）在基岩无对应文件，标记跳过而不是硬造名字
+    if (!mat) return { dir:'models/armor', name:'', changed:true, src:'armor-skip', skip:true };
+    return { dir:'models/armor', name: mat + ad.suf, changed:true, src:'armor' };
+  }
+  // 床：Java 与基岩同为 textures/entity/bed/{颜色}，只有浅灰叫法不同（light_gray → silver）
+  if (dir === 'entity/bed' && base === 'light_gray') return { dir, name:'silver', changed:true, src:'builtin' };
+  let mapped = base, src = 'none';
+  if (custom[base]) { mapped = custom[base]; src = 'custom'; }
+  else if (BUILTIN_MAP[base]) { mapped = BUILTIN_MAP[base]; src = 'builtin'; }
+  // 目录重定向：文件名不变，但基岩把该文件放在 blocks/ 的更深层子目录里。
+  // 用 Java 源基名查表（如 warped_planks），对 custom/builtin/none 三路都生效。
+  let outDir = dir;
+  if (DIR_REDIRECT[base]) { outDir = DIR_REDIRECT[base]; src = 'builtin'; }
+  return { dir: outDir, name: mapped, changed: mapped !== base || outDir !== dir, src };
+}
+/* macOS 打包会往 ZIP 里塞 AppleDouble 资源叉（._xxx.png）与 __MACOSX/，
+   扩展名仍是 .png、内容却是 176 字节元数据，绝不是 PNG。旧 scan() 只按扩展名
+   过滤，把它们当基色原样塞进 textures/blocks/ —— 基岩版扫描到非法 PNG 即报
+   「资源包加载错误」。这里在扫描入口拦截；文件名含空格的也一并剔除（资源位置不合法）。 */
+let SCAN_JUNK = 0;
+function isJunkPath(n){
+  const base = n.split('/').pop();
+  if (!base) return true;
+  if (/(^|\/)__MACOSX\//i.test(n)) return true;   // macOS 元数据目录
+  if (/^\._/.test(base)) return true;               // AppleDouble 资源叉 ._xxx
+  if (base === '.DS_Store') return true;
+  if (/\s/.test(base)) return true;                 // 文件名含空格/空白
+  return false;
+}
+function scan(zip){
+  const all = zip.names.filter(n => /\.png$/i.test(n) && /textures\//i.test(n));
+  const pngs = all.filter(n => !isJunkPath(n));
+  SCAN_JUNK = all.length - pngs.length;
+  const groups = new Map();
+  for (const p of pngs){
+    const m = p.match(/^(.*?)(_s|_n)?\.png$/i);
+    if (!m) continue;
+    const key = m[1], kind = m[2] ? m[2].toLowerCase() : 'color';
+    if (!groups.has(key)) groups.set(key, {});
+    groups.get(key)[kind === '_s' ? 'spec' : kind === '_n' ? 'norm' : 'color'] = p;
+  }
+  return Array.from(groups.entries()).map(([key, g]) => ({ key, ...g }));
+}
+
+/* ============ 自动识别上传包的名称 ============ */
+/* Java 资源包 pack_format → 对应游戏版本（Mojang 官方表，快照号省略）。
+   结构性变更点：4=1.13 扁平化（textures/blocks→block、items→item）；
+   12=1.19.3 新增 atlases/ 并停止自动适配 format 3/4 的老包；
+   18=1.20.2 GUI 拆成 textures/gui/sprites/**；22=1.20.3 起纹理只认 .png；
+   32=1.20.5 组件化；46=1.21.4 物品模型移到 items/。完整对照见资料 21 号。 */
+const JAVA_PACK_FORMATS = {1:'1.6.1–1.8.9',2:'1.9–1.10.2',3:'1.11–1.12.2',4:'1.13–1.14.4',
+  5:'1.15–1.16.1',6:'1.16.2–1.16.5',7:'1.17–1.17.1',8:'1.18–1.18.2',9:'1.19–1.19.2',
+  12:'1.19.3',13:'1.19.4',15:'1.20–1.20.1',18:'1.20.2',22:'1.20.3–1.20.4',32:'1.20.5–1.20.6',
+  34:'1.21–1.21.1',42:'1.21.2–1.21.3',46:'1.21.4',55:'1.21.5',63:'1.21.6',64:'1.21.7–1.21.8',
+  69:'1.21.9–1.21.10',75:'1.21.11',84:'26.1',88:'26.2'};
+function javaVersionOf(f){
+  const k = Number(f);
+  if (!isFinite(k)) return null;
+  return JAVA_PACK_FORMATS[k] || null;
+}
+// 代际：只关心「目录/命名体系是否与当前映射表同一套」
+function javaEraOf(f){
+  const k = Number(f);
+  if (!isFinite(k)) return 'unknown';
+  if (k <= 3) return 'pre-1.13';     // textures/blocks + 旧文件名（与基岩旧名更接近）
+  if (k === 4) return '1.13-1.14';   // 扁平化首版
+  return '1.15+';
+}
+
+// 优先级：pack.mcmeta 的 pack.description > 上传文件名 > 页面默认值。
+// Java 包的 description 常带 § 颜色码、多行文本，或写成 {"text":...} 组件格式，需清洗。
+function cleanPackName(s){
+  return String(s || '')
+    .replace(/§[0-9a-fk-orA-FK-OR]/g, '')      // Minecraft 颜色/格式码
+    .replace(/[\u0000-\u001f\u007f]/g, '')      // 控制字符
+    .replace(/\s+/g, ' ').trim().slice(0, 64);
+}
+// 介绍全文清洗：去 § 颜色码/控制字符，但保留换行，供写入基岩版介绍
+function cleanDescription(s){
+  return String(s || '')
+    .replace(/§[0-9a-fk-orA-FK-OR]/g, '')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim().slice(0, 1200);
+}
+// 把简介转成基岩 .lang 的值：换行写为字面 \n（bedrock 的 \n / ~LINEBREAK~ 规则），
+// 转义反斜杠与等号仅保留首个，去掉行尾空白，避免破坏 key=value 解析。
+function toLangValue(s){
+  return String(s || '')
+    .replace(/\\/g, '\\\\')       // 反斜杠先转义
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n/g, '\\n')        // 真实换行 → 字面 \n
+    .replace(/\s+$/g, '');
+}
+// Minecraft 文本组件（{"text":"...","extra":[...]}）递归提取纯文本
+function descText(d){
+  if (typeof d === 'string') return d;
+  if (Array.isArray(d)) return d.map(descText).join('');
+  if (d && typeof d === 'object')
+    return (typeof d.text === 'string' ? d.text : descText(d.text)) + (d.extra ? descText(d.extra) : '');
+  return '';
+}
+async function detectPackName(zip, label){
+  const all = zip.names.filter(n => /(^|\/)pack\.mcmeta$/i.test(n));
+  const entry = all.find(n => n.toLowerCase() === 'pack.mcmeta') || all[0];
+  let pf = null;   // 源包的 Java pack_format，决定它属于哪一代目录/命名体系
+  if (entry){
+    try {
+      const buf = await zip.get(entry);
+      if (buf){
+        const txt = new TextDecoder('utf-8').decode(new Uint8Array(buf)).replace(/^\uFEFF/, '');
+        const meta = JSON.parse(txt);
+        const raw = meta && meta.pack && meta.pack.description;
+        if (meta && meta.pack && typeof meta.pack.pack_format === 'number') pf = meta.pack.pack_format;
+        const plain = descText(raw);
+        const name = cleanPackName(plain.split(/[\r\n]/)[0]);
+        if (name) return { name, source: 'pack.mcmeta', description: cleanDescription(plain), packFormat: pf };
+      }
+    } catch(e){ /* mcmeta 缺失/损坏/非 UTF-8 → 走文件名兜底 */ }
+  }
+  const fromFile = cleanPackName(String(label || '')
+    .replace(/\.(zip|mcpack|mcaddon|jar)$/i, '').split(/[\\/]/).pop());
+  if (fromFile) return { name: fromFile, source: '文件名', description: '', packFormat: pf };
+  return pf === null ? null : { name: '', source: 'pack.mcmeta', description: '', packFormat: pf };
+}
+
+/* ============ 状态 ============ */
+let ZIP = null, GROUPS = [], OUT = null, REPORT = null, BUSY = false, DETECTED = null, CUSTOM_ICON = null;
+
+/* ============ 演示包 ============ */
+async function buildDemo(){
+  const E = [];
+  E.push({ name:'pack.mcmeta', data:enc({ pack:{ pack_format:15, description:'PBR2VV 演示包' } }) });
+  // 演示包刻意不带封面：让「无封面 → 中性占位图」这条输出侧路径也被示例包覆盖。
+  // 旧版在这里自画一张 pack.png 格子图并沿用成 pack_icon.png，那张图不是任何真实
+  // 材质包的封面，玩家在游戏里看到的「错误封面」正是它。已移除。
+  const W = 16;
+  const mk = (fn) => makePNG(W, W, fn);
+  // 1) 金属块：光滑、金、无 SSS、不发光
+  E.push({ name:'assets/minecraft/textures/block/demo_metal.png', data: await mk((x,y)=>[214,178,86,255]) });
+  E.push({ name:'assets/minecraft/textures/block/demo_metal_s.png', data: await mk(()=>[210,231,20,0]) });
+  E.push({ name:'assets/minecraft/textures/block/demo_metal_n.png', data: await mk(()=>[128,128,255,140]) });
+  // 2) 发光块：粗糙、介电质 F0、强 SSS、满自发光
+  E.push({ name:'assets/minecraft/textures/block/demo_glow.png', data: await mk((x,y)=>[70,150,190,255]) });
+  E.push({ name:'assets/minecraft/textures/block/demo_glow_s.png', data: await mk(()=>[90,40,200,254]) });
+  // 3) 石头：粗糙、低 F0、孔隙率、不发光
+  E.push({ name:'assets/minecraft/textures/block/demo_stone.png', data: await mk((x,y)=>[(x*13+y*7)%40+110,(x*9+y*11)%40+108,(x*5+y*3)%40+104,255]) });
+  E.push({ name:'assets/minecraft/textures/block/demo_stone_s.png', data: await mk(()=>[30,20,30,0]) });
+  // 4) 无 _s 的基色（用于演示回退）
+  E.push({ name:'assets/minecraft/textures/block/demo_plain.png', data: await mk(()=>[160,120,90,255]) });
+  const blob = zipStore(E);
+  return await blob.arrayBuffer();
+}
+
+/* ============ 载入 ============ */
+async function loadAB(ab, label){
+  try {
+    ZIP = await openZip(ab);
+    GROUPS = scan(ZIP);
+    // 自动识别包名；仅在用户未手动改过输入框时填入，避免覆盖自定义命名
+    DETECTED = await detectPackName(ZIP, label);
+    if (DETECTED){
+      const inp = $('#packname');
+      if (DETECTED.name && (inp.value === '' || inp.value === 'My LabPBR Pack')) inp.value = DETECTED.name;
+      if (DETECTED.packFormat != null){
+        const v = javaVersionOf(DETECTED.packFormat), era = javaEraOf(DETECTED.packFormat);
+        log(`源包 pack_format=${DETECTED.packFormat}${v ? ' → Java ' + v : '（未收录的快照号）'} · ${era} 目录体系`, 'g');
+      }
+    }
+    renderScan(label);
+    setStep(3); $('#s2').hidden = false; $('#s3').hidden = false;
+    $('#s4').hidden = true; $('#s5').hidden = true;
+  } catch(e){
+    alert('读取失败：' + (e.message || e));
+  }
+}
+function renderScan(label){
+  const nColor = GROUPS.filter(g=>g.color).length;
+  const nSpec  = GROUPS.filter(g=>g.spec).length;
+  const nNorm  = GROUPS.filter(g=>g.norm).length;
+  const nNoSpec = GROUPS.filter(g=>g.color && !g.spec).length;
+  const ns = new Set(GROUPS.map(g => (g.color||g.spec||'').split('/textures/')[0]));
+  $('#stats').innerHTML = [
+    [nColor,'基色贴图'],[nSpec,'_s 高光'],[nNorm,'_n 法线'],[ns.size,'命名空间']
+  ].map(([v,k])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  let custom = {};
+  try { custom = JSON.parse($('#mapjson').value || '{}'); } catch(e){}
+  $('#tbl').innerHTML = GROUPS.slice(0,40).map((g,i) => {
+    const src = (g.color||g.spec||g.key).split('/').pop();
+    const m = mapName(g.color || g.spec, custom);
+    return `<tr style="cursor:pointer" onclick="previewGroup(${i})" title="点击预览该组材质通道">
+      <td class="mono">${src.replace(/</g,'&lt;')}</td>
+      <td class="mono ok">textures/${m.dir}/${m.name}</td>
+      <td class="${g.spec?'ok':'warn'}">${g.spec?'✓':'—'}</td>
+      <td class="${g.norm?'ok':'dim'}">${g.norm?'✓':'—'}</td></tr>`;
+  }).join('') || '<tr><td colspan="4">未找到贴图</td></tr>';
+  let w = `来源：${label} · 共 ${GROUPS.length} 组`;
+  if (DETECTED && DETECTED.packFormat != null){
+    const v = javaVersionOf(DETECTED.packFormat);
+    w += ` · <span class="pill">Java ${v || '快照 ' + DETECTED.packFormat}（pack_format ${DETECTED.packFormat}）</span>`;
+    if (javaEraOf(DETECTED.packFormat) === 'pre-1.13')
+      w += ' <span class="warn">· 1.12 及更早结构：旧名多为基岩现名，通常直通</span>';
+  }
+  if (nSpec === 0) w += ' <span class="err">· 未找到任何 _s 贴图，可能不是 LabPBR 包</span>';
+  if (nNoSpec) w += ` <span class="warn">· ${nNoSpec} 张基色无 _s，将走 pbr/global.json 回退</span>`;
+  if (GROUPS.length > 40) w += ` · 表格仅显示前 40 组`;
+  const nb = GROUPS.filter(g => mapName(g.color || g.spec || '', custom).src === 'builtin').length;
+  const nc = GROUPS.filter(g => mapName(g.color || g.spec || '', custom).src === 'custom').length;
+  if (nb) w += ` <span class="ok">· 内置映射命中 ${nb} 组</span>`;
+  if (nc) w += ` <span class="ok">· 自定义映射 ${nc} 组</span>`;
+  if (DETECTED) w += ` <span class="ok">· 包名自动识别「${DETECTED.name.replace(/</g,'&lt;')}」（来源 ${DETECTED.source}）</span>`;
+  $('#scanwarn').innerHTML = w;
+}
+
+/* ============ 材质通道可视化预览 ============ */
+/* 点击扫描表格某行 → 展示原图 / _s 原样 / 转换后 MERS 四通道(R金属 G自发光 B粗糙 A次表面)。
+   注意：_s 的 alpha 存的是自发光(多数像素为0)，直接按原样显示会透明看不见 RGB，
+   故「_s 原样」用 opaque 模式(强制不透明)只看 RGB；四通道则各自取单值做灰度图。
+   putImageData 直接写像素、不经过 canvas 预乘，预览不改变任何材质数据。 */
+function paintRGBA(canvas, w, h, data, mode, ch){
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(w, h); const d = img.data;
+  for (let i=0;i<w*h;i++){
+    const o=i*4; let R=data[o], G=data[o+1], B=data[o+2], A=data[o+3];
+    if (mode==='opaque'){ A=255; }
+    else if (mode==='gray'){ const v = ch===0?R:ch===1?G:ch===2?B:A; R=G=B=v; A=255; }
+    d[o]=R; d[o+1]=G; d[o+2]=B; d[o+3]=A;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+async function previewGroup(i){
+  const g = GROUPS[i]; if (!g) return;
+  const pv = $('#preview'); pv.hidden = false;
+  const imgs = $('#pv-imgs'), statsEl = $('#pv-stats');
+  const baseName = (g.color||g.spec||g.key).split('/').pop();
+  let custom = {}; try { custom = JSON.parse($('#mapjson').value || '{}'); } catch(e){}
+  const opt = { metal: $('#metal').value, sss: $('#optSss').checked };
+  const m = mapName(g.color || g.spec, custom);
+  $('#pv-title').innerHTML = `预览：<span class="mono">${baseName.replace(/</g,'&lt;')}</span> → <span class="mono ok">textures/${m.dir}/${m.name}</span>`;
+  imgs.innerHTML = ''; statsEl.textContent = '加载中…';
+  const addCard = (canvas, label, note) => {
+    const fig = document.createElement('figure');
+    fig.style.cssText = 'margin:0;text-align:center';
+    canvas.style.cssText = 'width:88px;height:88px;image-rendering:pixelated;border:1px solid var(--line);background:#0c0f12;border-radius:4px';
+    const cap = document.createElement('figcaption');
+    cap.style.cssText = 'font-size:11px;color:var(--dim);margin-top:4px;line-height:1.4';
+    cap.innerHTML = label + (note ? `<br><span style="color:#6f7f8b">${note}</span>` : '');
+    fig.appendChild(canvas); fig.appendChild(cap); imgs.appendChild(fig);
+  };
+  try {
+    let base=null, spec=null;
+    if (g.color){ try { base = await decodePNG(await ZIP.get(g.color)); } catch(e){ base=null; } }
+    if (g.spec){ try { spec = await decodePNG(await ZIP.get(g.spec)); } catch(e){ spec=null; } }
+    if (base){ const c=document.createElement('canvas'); paintRGBA(c, base.w, base.h, base.data, 'raw'); addCard(c, '原图', `${base.w}×${base.h}`); }
+    if (spec){
+      const cs = document.createElement('canvas'); paintRGBA(cs, spec.w, spec.h, spec.data, 'opaque');
+      addCard(cs, '_s 原样', 'RGB（含自发光α）');
+      const w=spec.w, h=spec.h, n=w*h;
+      const labels = ['R 金属度','G 自发光','B 粗糙度','A 次表面SSS'];
+      const cvs = labels.map(()=>document.createElement('canvas'));
+      const ctxs = cvs.map(c=>{ c.width=w; c.height=h; return c.getContext('2d'); });
+      const imgs4 = ctxs.map(ctx=>ctx.createImageData(w,h));
+      let metalPx=0, emisPx=0, sssPx=0, sumRough=0;
+      for (let p=0;p<n;p++){
+        const o=p*4;
+        const mers = labpbrToMers(spec.data[o], spec.data[o+1], spec.data[o+2], spec.data[o+3], opt);
+        for (let k=0;k<4;k++){ const v=mers[k], q=p*4; imgs4[k].data[q]=v; imgs4[k].data[q+1]=v; imgs4[k].data[q+2]=v; imgs4[k].data[q+3]=255; }
+        if (mers[0]>=128) metalPx++;
+        if (mers[1]>0) emisPx++;
+        if (mers[3]>0) sssPx++;
+        sumRough += mers[2];
+      }
+      ctxs.forEach((ctx,k)=>ctx.putImageData(imgs4[k],0,0));
+      cvs.forEach((c,k)=>addCard(c, labels[k], ''));
+      statsEl.innerHTML = `尺寸 <b style="color:var(--txt)">${w}×${h}</b> · 像素 ${n}<br>`
+        + `<span style="color:var(--blue)">金属 ${(metalPx/n*100).toFixed(1)}%</span> · `
+        + `<span style="color:var(--amber)">自发光 ${(emisPx/n*100).toFixed(1)}%</span> · `
+        + `<span style="color:var(--green2)">SSS ${(sssPx/n*100).toFixed(1)}%</span> · `
+        + `平均粗糙度 <b style="color:var(--txt)">${(sumRough/n).toFixed(0)}/255</b>`;
+    } else {
+      statsEl.innerHTML = '<span style="color:var(--amber)">该组无 _s 贴图</span>：不生成 MERS，将由 pbr/global.json 回退（金属0 / 自发光0 / 粗糙255 / SSS0）。';
+    }
+  } catch(e){ statsEl.textContent = '预览失败：' + (e.message||e); }
+}
+
+/* ============ 转换主流程 ============ */
+async function convert(){
+  if (BUSY) return; BUSY = true;
+  $('#run').disabled = true;
+  $('#log').innerHTML = '';
+  $('#s4').hidden = false; setStep(4);
+  let custom = {};
+  try { custom = JSON.parse($('#mapjson').value || '{}'); }
+  catch(e){ log('名称映射 JSON 解析失败，已忽略自定义映射', 'w'); }
+  const opt = {
+    metal: $('#metal').value,
+    sss: $('#optSss').checked,
+    normal: $('#optNormal').checked,
+    flipY: $('#optFlip').checked,
+    fallback: $('#optFallback').checked,
+    stack: $('#optStack').checked,
+    i18n: $('#optI18n').checked,
+    bed: $('#optBed').checked,
+    engine: $('#engine').value.split(',').map(Number),
+    packName: ($('#packname').value || 'My LabPBR Pack').trim(),
+    map: custom
+  };
+  const E = [];
+  const failures = [], unmapped = [];
+  let converted = 0, skipped = 0, lostF0 = 0, lostPor = 0, withNormal = 0, noSpec = 0;
+  let nBuiltin = 0, nCustom = 0;
+  let junkSkipped = 0, invalidPng = 0, dupSkipped = 0;
+  let skippedNoPBR = 0, tgaBase = 0, skippedArmorLayer = 0;   // 非PBR目录跳过 / tga基色 / 盔甲无对应层(leather_overlay)
+  let bedReuv = 0, bedSkip = 0;   // 床 UV 重排成功 / 非512²跳过
+  let overlaySkipped = 0;        // Java _overlay 叠加层（已合成进基色）跳过数
+  let overlayComposited = 0;     // 成功把 overlay 烘焙进基色的组数
+  const emitted = new Set();   // 已占用的输出基名，防止重复 ZIP 条目
+
+  // 转换记录：时间 / 工具 / 选项 / 统计，写入基岩版 header.description 与报告，便于追溯。
+  const now = new Date();
+  const convISO = now.toISOString();
+  const convLocal = now.toLocaleString('zh-CN', { hour12:false });
+  const javaDesc = (DETECTED && DETECTED.description) ? DETECTED.description : '';
+  const javaDescFromMeta = !!(DETECTED && DETECTED.source === 'pack.mcmeta');
+  const optText = [
+    'metal=' + opt.metal, 'SSS=' + (opt.sss ? 'on' : 'off'),
+    'normal=' + (opt.normal ? 'on' : 'off'), 'flipY=' + (opt.flipY ? 'on' : 'off'),
+    'fallback=' + (opt.fallback ? 'on' : 'off'),
+    'engine=' + opt.engine.join('.'), 'stack=' + (opt.stack ? 'on' : 'off'),
+    'i18n=' + (opt.i18n ? 'on' : 'off'), 'bedReuv=' + (opt.bed ? 'on' : 'off')
+  ].join(', ');
+  const convRecord = [
+    '',
+    '──── PBR2VV 转换记录 ────',
+    '工具：PBR2VV M0（离线网页转换器）',
+    '转换时间：' + convLocal + '（' + convISO + '）',
+    '来源：Java LabPBR → 基岩版灵动视效 Vibrant Visuals',
+    '选项：' + optText
+  ].join('\n');
+  const manifestDesc = ((javaDesc ? javaDesc + '\n' : '') +
+    'Converted from LabPBR by PBR2VV' + convRecord).slice(0, 2000);
+  const CONV = {
+    tool: 'PBR2VV M0 (offline web)',
+    convertedAt: convISO, convertedAtLocal: convLocal,
+    sourceDescription: javaDesc, sourceDescriptionFromMeta: javaDescFromMeta,
+    sourcePackFormat: (DETECTED && DETECTED.packFormat != null) ? DETECTED.packFormat : null,
+    sourceJavaVersion: (DETECTED && DETECTED.packFormat != null) ? javaVersionOf(DETECTED.packFormat) : null,
+    sourceEra: (DETECTED && DETECTED.packFormat != null) ? javaEraOf(DETECTED.packFormat) : null,
+    options: { metalPolicy:opt.metal, emitSSS:opt.sss, emitNormal:opt.normal,
+      flipNormalY:opt.flipY, emitFallback:opt.fallback, stackMode:opt.stack,
+      localizedDescription:opt.i18n, minEngineVersion:opt.engine },
+    manifestDescription: manifestDesc
+  };
+  // manifest：header.description = Java 原介绍 + 转换记录
+  const manifest = {
+    format_version: 2,
+    header: { name: opt.packName, description: manifestDesc,
+      uuid: uuid(), version:[1,0,0], min_engine_version: opt.engine },
+    modules: [{ type:'resources', uuid: uuid(), version:[1,0,0] }],
+    capabilities: ['pbr']
+  };
+  E.push({ name:'manifest.json', data:enc(manifest) });
+  log('manifest.json 已生成（介绍已同步 Java 原描述 + 转换记录，capabilities: ["pbr"]）', 'g');
+
+  // 多语言简介模板：texts/languages.json + zh_CN.lang + en_US.lang。
+  // 基岩版允许用 .lang 里的 pack.name / pack.description 覆盖清单里游戏内显示的包名与简介，
+  // 并且必须在 languages.json 声明语言代码才会生效（见 18_ 号资料）。把 Java 原介绍 +
+  // 转换记录同时写进两种语言，作为纯文本 manifest.description 的本地化覆盖。
+  // 只覆盖显示层的键，叠其他 PBR 包时不会触发「资源包加载错误」。
+  let langFiles = [];
+  if (opt.i18n){
+    const langVal = toLangValue(manifestDesc);
+    const zh = '## PBR2VV localized pack name/description\n' +
+      'pack.name=' + toLangValue(opt.packName) + '\n' +
+      'pack.description=' + langVal + '\n';
+    const en = '## PBR2VV localized pack name/description\n' +
+      'pack.name=' + toLangValue(opt.packName) + '\n' +
+      'pack.description=' + langVal + '\n';
+    E.push({ name:'texts/languages.json', data:enc(['zh_CN','en_US']) });
+    E.push({ name:'texts/zh_CN.lang', data:enc(zh) });
+    E.push({ name:'texts/en_US.lang', data:enc(en) });
+    langFiles = ['texts/languages.json','texts/zh_CN.lang','texts/en_US.lang'];
+    log('多语言简介模板已生成（zh_CN / en_US，pack.name + pack.description 覆盖显示）', 'g');
+  } else {
+    log('未生成多语言简介模板（本次关闭）', 'w');
+  }
+
+  // 封面 = 基岩包在「游戏资源包列表」里显示的 pack_icon.png（输出侧统一生成）。
+  // 基岩 [CPACKICON] 约束：根目录唯一一个 pack_icon.png，正方形、边长为 2 的幂（≤256）。
+  // 旧版无条件塞一张自画的绿色棋盘 / 格子图，那张图既不是源包封面也不像包图标，
+  // 玩家在游戏里看到的就是这张「错误封面」——问题在基岩输出侧，与 Java 源包无关。
+  // 三级优先级：自定义上传 > 源包封面 > 中性占位；一律规整为 128×128 RGBA PNG。
+  const iconPatterns = [
+    /(^|\/)pack\.png$/i,         // Java 资源包封面
+    /(^|\/)pack_icon\.png$/i,    // 基岩资源包封面
+    /(^|\/)pack_icon\.jpe?g$/i,  // 基岩 jpeg 封面
+    /(^|\/)pack\.jpe?g$/i        // 少数 Java 包用 jpg
+  ];
+  let iconBytes = null, iconSource = 'placeholder', iconW = 0, iconH = 0, iconRGBA = null, iconNote = '';
+  if (CUSTOM_ICON && CUSTOM_ICON.byteLength){
+    iconBytes = CUSTOM_ICON; iconSource = 'custom';
+  } else {
+    for (const re of iconPatterns){
+      const entry = ZIP.names.find(n => re.test(n));
+      if (!entry) continue;
+      try {
+        const ib = await ZIP.get(entry);
+        if (ib && ib.byteLength){ iconBytes = new Uint8Array(ib); iconSource = entry; }
+      } catch(e){ log('! 源包封面读取失败：' + entry, 'w'); }
+      if (iconBytes) break;
+    }
+  }
+  if (iconBytes){
+    const isPNG = iconSource === 'custom'
+      ? (iconBytes[0] === 0x89 && iconBytes[1] === 0x50 && iconBytes[2] === 0x4E)
+      : /\.png$/i.test(iconSource);
+    try {
+      const src = await decodeIcon(iconBytes, isPNG);
+      iconW = src.w; iconH = src.h;
+      iconRGBA = normalizeIcon(src);
+    } catch(e){
+      log('! 封面解码失败，改用中性占位图：' + e.message, 'w');
+      iconBytes = null; iconRGBA = null;
+    }
+  }
+  if (!iconRGBA){
+    iconRGBA = placeholderIcon(); iconW = iconH = ICON_SIZE;
+    iconSource = 'placeholder';
+    iconNote = '源包无封面且未指定自定义封面 → 中性占位图';
+  } else if (iconSource === 'custom'){
+    iconNote = `自定义封面 ${iconW}×${iconH} → 规整为 ${ICON_SIZE}×${ICON_SIZE} PNG`;
+  } else {
+    iconNote = `沿用 ${iconSource} (${iconW}×${iconH}) → 规整为 ${ICON_SIZE}×${ICON_SIZE} PNG`;
+  }
+  const iconFile = 'pack_icon.png';
+  E.push({ name: iconFile, data: await makePNGRGBA(ICON_SIZE, ICON_SIZE, iconRGBA) });
+  log('封面：' + iconNote, iconSource === 'placeholder' ? 'w' : 'g');
+
+  const total = GROUPS.length;
+  for (let i=0; i<total; ++i){
+    const g = GROUPS[i];
+    $('#bar').style.width = Math.round((i+1)/total*100) + '%';
+    $('#ptext').textContent = `处理 ${i+1} / ${total} · ${g.key.split('/').pop()}`;
+    try {
+      if (!g.color && !g.spec){ skipped++; continue; }
+      const basePath = g.color || g.spec;
+      const m = mapName(basePath, opt.map);
+      // Java 的纯叠加层（如 grass_block_side_overlay）在基岩无独立文件，
+      // 其内容会在 base 组转换时 alpha 合成进基色，这里跳过，避免冗余输出。
+      const srcBase = g.key.split('/').pop().replace(/(_s|_n)?$/i, '');
+      if (OVERLAY_ONLY.has(srcBase)){ overlaySkipped++; skipped++; continue; }
+      if (m.src === 'builtin') nBuiltin++;
+      else if (m.src === 'custom') nCustom++;
+      else unmapped.push(m.name);   // 未命中任何映射规则（可能是精确同名，也可能确实未收录）
+      const outBase = `textures/${m.dir}/${m.name}`;
+      // 非 PBR 目录（map/ui/font/gui/painting 等）：基岩端没有 texture_set，
+      // 写进去也不会生效，还会污染包体，直接跳过并如实计数。
+      if (m.skip){ skippedArmorLayer++; skipped++; continue; }
+      if (!isPBRDir(m.dir)){
+        skippedNoPBR++; skipped++;
+        if (skippedNoPBR <= 5) log(`- ${m.name}：${m.dir}/ 目录在基岩不支持 PBR，已跳过`, 'w');
+        continue;
+      }
+      // 输出名合法性：即便扫描漏过，也绝不把空白/._ 名字写进包
+      if (!m.name || /\s/.test(m.name) || /^\._/.test(m.name)){
+        junkSkipped++; skipped++;
+        log(`- 跳过非法输出名「${m.name}」`, 'w'); continue;
+      }
+      // 去重：不同源目录映射到同一基岩名会产生重复 ZIP 条目，加载器可能直接报错
+      if (emitted.has(outBase)){
+        dupSkipped++; skipped++;
+        log(`- ${m.name} 输出名重复，已跳过（源包存在同名贴图）`, 'w'); continue;
+      }
+
+      // 床：仅 512² 的 entity/bed 基色做 UV 重排（Java 两岛 → 基岩单岛）。
+      // 判定用目标目录 m.dir，基色 / MERS / 法线必须共用同一套 reuvBed 变换。
+      const isBed = opt.bed && m.dir === 'entity/bed' && !!g.color;
+      let bedColor = null;   // 重排后的基色 RGBA（含 w,h），null=不重排
+      if (isBed){
+        try {
+          const bi = await decodePNG(new Uint8Array(await ZIP.get(g.color)));
+          if (bi.w === 512 && bi.h === 512){
+            const ru = reuvBed(bi.data, bi.w, bi.h);
+            // geoAlpha = 原始基色 RGBA，供 MERS / 法线重排时共用侧岛凹陷 mask
+            if (ru){ bedColor = { w:bi.w, h:bi.h, data:ru, geoAlpha:bi.data }; }
+          } else {
+            bedSkip++;
+            if (bedSkip <= 3) log(`! ${m.name} 床图 ${bi.w}×${bi.h} 非 512²，跳过 UV 重排`, 'w');
+          }
+        } catch(e){ bedSkip++; }
+        if (bedColor) bedReuv++;
+      }
+      // 基色：复制前校验 PNG 头，杜绝把 macOS 资源叉/损坏文件写进包
+      if (g.color){
+        const cb0 = new Uint8Array(await ZIP.get(g.color));
+        const okPNG = cb0.length >= 8 && cb0[0]===0x89 && cb0[1]===0x50 && cb0[2]===0x4E && cb0[3]===0x47;
+        if (!okPNG){
+          invalidPng++; skipped++;
+          log(`- ${m.name} 基色不是有效 PNG，已跳过（疑似 macOS 资源叉/损坏文件）`, 'w'); continue;
+        }
+        // Java 的 _overlay 叠加层：基岩把叠加效果烘焙进基色。若本目标有对应
+        // overlay 源图，则 alpha 合成进基色（out.rgb = ov.rgb*a + base.rgb*(1-a)，
+        // out.alpha = base.alpha）——实测与网易基岩包差 0.12（纯基色差 13.20）。
+        let overlayImg = null;
+        const ovSrc = OVERLAY_SRC[m.name];
+        if (ovSrc && !bedColor){
+          const ovName = g.color.replace(/[^/]+\.png$/i, ovSrc + '.png');
+          try {
+            const ovBytes = new Uint8Array(await ZIP.get(ovName));
+            if (ovBytes.length >= 8 && ovBytes[0]===0x89 && ovBytes[1]===0x50){
+              const bo = await decodePNG(cb0), ov = await decodePNG(ovBytes);
+              if (bo.w === ov.w && bo.h === ov.h){
+                const data = new Uint8Array(bo.w * bo.h * 4);
+                for (let p=0; p<bo.w*bo.h; ++p){
+                  const j=p*4, a=ov.data[j+3]/255;
+                  data[j]   = Math.round(ov.data[j]  *a + bo.data[j]  *(1-a));
+                  data[j+1] = Math.round(ov.data[j+1]*a + bo.data[j+1]*(1-a));
+                  data[j+2] = Math.round(ov.data[j+2]*a + bo.data[j+2]*(1-a));
+                  data[j+3] = bo.data[j+3];
+                }
+                overlayImg = { w:bo.w, h:bo.h, data };
+                overlayComposited++;
+                log(`+ ${m.name} 已叠加 Java overlay（${ovSrc}）烘焙进基色`, 'g');
+              }
+            }
+          } catch(e){ log(`! ${m.name} overlay 合成失败，改用纯基色：${e.message}`, 'w'); }
+        }
+        if (TGA_BASE.has(m.name)){
+          // 官方对该目标只提供 .tga，而基岩按 .tga > .png > .jpg 取图，
+          // 写 .png 会被官方 tga 压制 → 表现为「贴图没生效」。故按目标格式写 tga。
+          const im = bedColor || overlayImg || await decodePNG(cb0);
+          E.push({ name: outBase + '.tga', data: encodeTGA(im.w, im.h, im.data) });
+          tgaBase++;
+        } else if (bedColor){
+          // 重排后必须重新编码（编码走自实现 encodePNGBytes，保持 alpha 非预乘）
+          E.push({ name: outBase + '.png', data: await makePNGRGBA(bedColor.w, bedColor.h, bedColor.data) });
+        } else if (overlayImg){
+          E.push({ name: outBase + '.png', data: await makePNGRGBA(overlayImg.w, overlayImg.h, overlayImg.data) });
+        } else {
+          E.push({ name: outBase + '.png', data: cb0 });
+        }
+      } else {
+        E.push({ name: outBase + '.png', data: await makePNG(16,16,()=>[200,200,200,255]) });
+        log(`! ${m.name} 缺基色，已用占位图`, 'w');
+      }
+      emitted.add(outBase);
+
+      if (!g.spec){
+        noSpec++; skipped++;
+        log(`- ${m.name} 无 _s，跳过 MERS（${opt.fallback?'由 pbr/global.json 回退':'无回退'}）`, 'w');
+        continue;
+      }
+
+      const cb = await ZIP.get(g.spec);
+      const img = await decodePNG(cb);
+      const mers = new Uint8Array(img.w * img.h * 4);
+      let nrm = opt.normal && g.norm ? await decodePNG(await ZIP.get(g.norm)) : null;
+      if (nrm && (nrm.w !== img.w || nrm.h !== img.h)){
+        // nrm 必须是 let：尺寸不匹配时要把它置空。旧版写成 const，
+        // 一旦遇到尺寸不一致的 _n 就抛 "Assignment to constant variable."，
+        // 整组转换失败（报告里的 4 个 failures 即由此而来）。
+        log(`! ${m.name} 法线尺寸不匹配，已忽略法线`, 'w'); nrm = null;
+      }
+      const nout = nrm ? new Uint8Array(img.w*img.h*4) : null;
+      for (let p=0; p<img.w*img.h; ++p){
+        const j = p*4, r=img.data[j], gg=img.data[j+1], b=img.data[j+2], a=img.data[j+3];
+        const o = labpbrToMers(r,gg,b,a,opt);
+        mers[j]=o[0]; mers[j+1]=o[1]; mers[j+2]=o[2]; mers[j+3]=o[3];
+        if (gg < 230 && gg > 0) lostF0++;
+        if (b <= 64 && b > 0) lostPor++;
+        if (nout){
+          const nv = splitNormal(nrm.data[j], nrm.data[j+1], nrm.data[j+2], nrm.data[j+3], opt.flipY);
+          nout[j]=nv[0]; nout[j+1]=nv[1]; nout[j+2]=nv[2]; nout[j+3]=255;
+        }
+      }
+      // 床：MERS / 法线与基色共用同一套 UV 重排——否则颜色与材质通道错位。
+      // 仅在基色已成功重排（bedColor 非空）且 _s 也是 512² 时应用。
+      let mersOut = mers, noutOut = nout;
+      if (bedColor && img.w === 512 && img.h === 512){
+        const gm = bedColor.geoAlpha;   // 三通道共用基色的几何 alpha 做侧岛 mask
+        mersOut = reuvBed(mers, img.w, img.h, gm);
+        if (nout) noutOut = reuvBed(nout, img.w, img.h, gm);
+      }
+      E.push({ name: outBase + '_mers.tga', data: encodeTGA(img.w, img.h, mersOut) });
+      const ts = { format_version:'1.21.30', 'minecraft:texture_set': {
+        color: m.name, metalness_emissive_roughness_subsurface: m.name + '_mers' } };
+      if (noutOut){
+        E.push({ name: outBase + '_normal.tga', data: encodeTGA(img.w, img.h, noutOut) });
+        ts['minecraft:texture_set'].normal = m.name + '_normal';
+        withNormal++;
+      }
+      E.push({ name: outBase + '.texture_set.json', data: enc(ts) });
+      converted++;
+      if (converted % 10 === 0) log(`✓ 已转换 ${converted} 张`, 'g');
+    } catch(e){
+      failures.push({ group: g.key, error: String(e.message||e) });
+      log(`✗ ${g.key.split('/').pop()}：${e.message||e}`, 'e');
+    }
+    if (i % 3 === 0) await frame();
+  }
+
+  // pbr/global.json 里的 minecraft:pbr_fallback_settings 是【全局单例】。
+  // 与另一个同样带 capabilities:["pbr"] 的包（如 ENRO）叠加时，两个包各定义一份
+  // 会冲突并触发「资源包加载错误」——叠加模式直接不输出，交给下层包提供回退。
+  if (opt.fallback && opt.stack && noSpec > 0){
+    log('叠加模式：不写 pbr/global.json（由下层包提供全局回退），避免全局单例冲突', 'w');
+  }
+  if (opt.fallback && !opt.stack && noSpec > 0){
+    const fb = { format_version:'1.21.40', 'minecraft:pbr_fallback_settings': {} };
+    for (const k of ['blocks','actors','particles','items'])
+      fb['minecraft:pbr_fallback_settings'][k] = { global_metalness_emissive_roughness_subsurface:[0,0,255,0] };
+    E.push({ name:'pbr/global.json', data: enc(fb) });
+    log(`pbr/global.json 已生成（${noSpec} 张走回退）`, 'g');
+  }
+
+  REPORT = {
+    generator:'PBR2VV M0', target:'Minecraft Bedrock Vibrant Visuals',
+    conversion: CONV,
+    options:{ metalPolicy:opt.metal, emitSSS:opt.sss, emitNormal:opt.normal, flipNormalY:opt.flipY,
+      minEngineVersion:opt.engine, stackMode:!!opt.stack, bedUVReuv:!!opt.bed },
+    input:{ groups:total, withSpecular:GROUPS.filter(g=>g.spec).length, withNormalMaps:GROUPS.filter(g=>g.norm).length,
+      sourcePackFormat: CONV.sourcePackFormat, sourceJavaVersion: CONV.sourceJavaVersion, sourceEra: CONV.sourceEra },
+    output:{ converted, skipped, noSpecular:noSpec, normalMaps:withNormal,
+      tgaBaseColors:tgaBase, skippedNonPBRDir:skippedNoPBR,
+      armorLayers: GROUPS.filter(g => /equipment\/humanoid/.test(g.key||'')).length,
+      skippedArmorLayer:skippedArmorLayer, bedUVReuv:bedReuv, bedReuvSkipped:bedSkip,
+      overlayComposited, overlaySkipped, files:E.length },
+    localization: { enabled: opt.i18n, languages: opt.i18n ? ['zh_CN','en_US'] : [],
+      files: langFiles,
+      note: opt.i18n
+        ? 'texts/*.lang 以 pack.name / pack.description 覆盖游戏内显示；Java 原介绍与转换记录原样写入两种语言（未机器翻译，仅提供可编辑模板），换行转义为字面 \\n'
+        : '本次未生成多语言模板，游戏内简介以 manifest.header.description 纯文本显示' },
+    icon: { file: iconFile, source: iconSource, width: ICON_SIZE, height: ICON_SIZE,
+            original: (iconW && iconH) ? { w: iconW, h: iconH } : null, note: iconNote },
+    hygiene:{ scanJunkSkipped:SCAN_JUNK, illegalNameSkipped:junkSkipped,
+      invalidPngSkipped:invalidPng, duplicateSkipped:dupSkipped,
+      note:'扫描阶段过滤 macOS AppleDouble/空格名；基色复制前校验 PNG 头；输出名去重，避免非法文件与重复条目引发资源包加载错误' },
+    informationLoss:{ f0Pixels:lostF0, porosityPixels:lostPor,
+      note:'介电质 F0 / 孔隙率 / 材质 AO / POM 高度在 VV 中无对应通道，已丢弃' },
+    bedUV: { enabled:!!opt.bed, reuv:bedReuv, skippedNon512:bedSkip,
+      note:'512² 床图由 Java 两分离岛重排为基岩单连通岛：主岛删 48px 缝 + 顶部木条归位；床尾木架用基岩 geometry UV 镂空规格（2×48px 腿，16 色一致，IOU=1.0）+ Java 侧岛【96×96 单元横向 tile：sy=ty,sx=tx%96】——碎块横纵比例不变，彻底消除实机"竖装拉伸"，侧岛 25% 透明工字形区用同行横向最近不透明填充消除白洞；基色/MERS/法线共用几何 alpha 同步。真包底部形状 100% 对齐、底部平均差 15.37→14.32' },
+    mapping: { builtinTableSize: BUILTIN_MAP_SIZE, builtinHits: nBuiltin,
+      customHits: nCustom, unchanged: unmapped.length,
+      note: '未改名条目可能是 Java/基岩精确同名，也可能是映射表未收录，需人工核对' },
+    unmappedNames: Array.from(new Set(unmapped)).slice(0,200),
+    failures
+  };
+  E.push({ name:'_pbr2vv_report.json', data: enc(REPORT) });
+  // 报告先生成、后入包：回填真实文件数并重写该 entry，
+  // 否则 output.files 会少算报告自身（14 vs 实际 15）。
+  REPORT.output.files = E.length;
+  E[E.length-1].data = enc(REPORT);
+
+  OUT = zipStore(E);
+  const kb = (OUT.size/1024).toFixed(1);
+  $('#rstats').innerHTML = [
+    [converted,'已转换'],[E.length,'输出文件'],[failures.length,'失败'],[kb+'K','包体积']
+  ].map(([v,k])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  let sm = `输出 <b>${converted}</b> 组 MERS 三件套`;
+  if (withNormal) sm += `，其中 ${withNormal} 组含法线`;
+  if (noSpec) sm += `；${noSpec} 张无 _s`;
+  if (opt.bed && bedReuv) sm += `；床 UV 重排 ${bedReuv} 张` + (bedSkip ? `（${bedSkip} 张非512²跳过）` : '');
+  sm += `。丢弃 F0 像素 ${lostF0}、孔隙率像素 ${lostPor}`;
+  if (failures.length) sm += ` <span class="err">· ${failures.length} 张失败，详见报告</span>`;
+  $('#rsummary').innerHTML = sm;
+  log(`完成：${E.length} 个文件，${kb} KB`, 'g');
+  $('#s5').hidden = false; setStep(5);
+  BUSY = false; $('#run').disabled = false;
+}
+function download(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 30000);
+}
+
+/* ============ 事件绑定 ============ */
+$('#drop').addEventListener('click', ()=> $('#file').click());
+$('#file').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await loadAB(await f.arrayBuffer(), f.name);
+});
+['dragenter','dragover'].forEach(t => $('#drop').addEventListener(t, e => {
+  e.preventDefault(); $('#drop').classList.add('over');
+}));
+['dragleave','drop'].forEach(t => $('#drop').addEventListener(t, e => {
+  e.preventDefault(); $('#drop').classList.remove('over');
+}));
+$('#drop').addEventListener('drop', async e => {
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  await loadAB(await f.arrayBuffer(), f.name);
+});
+$('#demo').addEventListener('click', async () => {
+  $('#demo').disabled = true; $('#demo').textContent = '生成中…';
+  try { await loadAB(await buildDemo(), '内置演示包（4 组）'); }
+  catch(e){ alert('演示包生成失败：' + (e.message||e)); }
+  $('#demo').disabled = false; $('#demo').textContent = '生成演示包并载入';
+});
+$('#iconfile').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  CUSTOM_ICON = f ? new Uint8Array(await f.arrayBuffer()) : null;
+  if (f) log(`自定义封面已载入：${f.name}（转换时规整为 ${ICON_SIZE}×${ICON_SIZE}）`, 'g');
+});
+$('#mapjson').addEventListener('change', () => { if (ZIP) renderScan('当前包'); });
+$('#run').addEventListener('click', convert);
+$('#dl').addEventListener('click', () => download(OUT, ($('#packname').value||'pack').trim().replace(/[\\/:*?"<>|]/g,'_') + '.mcpack'));
+$('#dlreport').addEventListener('click', () => download(new Blob([JSON.stringify(REPORT,null,2)],{type:'application/json'}), 'pbr2vv_report.json'));
+$('#again').addEventListener('click', () => {
+  ['s2','s3','s4','s5'].forEach(id => $('#'+id).hidden = true);
+  setStep(1); $('#file').value = '';
+});
+
+/* ============ 启动自检 ============ */
+(function(){
+  let ok = false;
+  try { new DecompressionStream('deflate-raw'); new CompressionStream('deflate'); ok = true; } catch(e){}
+  $('#zipmode').textContent = ok ? 'ZIP 引擎：原生 · 完全离线' : 'ZIP 引擎：当前浏览器不支持原生解压';
+  if (!ok) $('#demo').disabled = true;
+  log('就绪。点击「生成演示包并载入」即可完整跑通一次转换。', 'g');
+})();
+</script>
+</body>
+</html>

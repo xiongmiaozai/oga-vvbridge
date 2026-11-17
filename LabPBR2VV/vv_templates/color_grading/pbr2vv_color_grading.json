@@ -1,0 +1,26 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:color_grading_settings": {
+    "description": {
+      "identifier": "pbr2vv:default_color_grading"
+    },
+    "_comment": "色彩分级/色调映射：midtones 三项各为 [R,G,B] 系数——contrast 对比度、gain 增益、gamma 伽马(默认2.2)、offset 偏移、saturation 饱和度。temperature 色温 enabled/temperature(K)/type(color_temperature|custom)。tone_mapping.operator 全包必须一致(不可混合)，官方默认 generic。摘自官方样例包并改命名空间。",
+    "color_grading": {
+      "midtones": {
+        "contrast": [1.15, 1.15, 1.15],
+        "gain": [1.0, 1.0, 1.0],
+        "gamma": [2.2, 2.2, 2.2],
+        "offset": [0.0, 0.0, 0.0],
+        "saturation": [1.05, 1.05, 1.05]
+      },
+      "temperature": {
+        "enabled": true,
+        "temperature": 6500,
+        "type": "color_temperature"
+      }
+    },
+    "tone_mapping": {
+      "operator": "generic"
+    }
+  }
+}

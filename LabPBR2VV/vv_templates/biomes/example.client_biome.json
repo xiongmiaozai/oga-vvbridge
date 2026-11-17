@@ -1,0 +1,23 @@
+{
+  "format_version": "1.21.70",
+  "minecraft:client_biome": {
+    "description": {
+      "identifier": "plains"
+    },
+    "components": {
+      "_comment": "把 VV 配置挂到群系：四类标识符分别对应 atmospherics/color_grading/lighting/water 目录里 JSON 的 description.identifier。保留文件名 atmospherics/atmospherics.json、color_grading/color_grading.json、lighting/global.json、water/water.json 的条目会自动成为全局默认值，无需在 biome 里显式引用。摘自官方 07_生物群系自定义文档。",
+      "minecraft:atmosphere_identifier": {
+        "atmosphere_identifier": "pbr2vv:default_atmospherics"
+      },
+      "minecraft:color_grading_identifier": {
+        "color_grading_identifier": "pbr2vv:default_color_grading"
+      },
+      "minecraft:lighting_identifier": {
+        "lighting_identifier": "pbr2vv:default_lighting"
+      },
+      "minecraft:water_identifier": {
+        "water_identifier": "pbr2vv:default_water"
+      }
+    }
+  }
+}
