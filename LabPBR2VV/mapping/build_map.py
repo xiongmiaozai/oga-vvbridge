@@ -96,6 +96,49 @@ MANUAL = {
     "netherite_layer_1": ("netherite_1", "models/armor"),
     "netherite_layer_2": ("netherite_2", "models/armor"),
     "turtle_layer_1": ("turtle_1", "models/armor"),
+    # ---- ENRO 实测补录（2026-11-19）----
+    # 来源：用 ENRO 0.20.2 主体 128x.zip 跑转换，发现这些 Java 名未命中 484 表、
+    # 同名直传会落空；逐条在 Mojang bedrock-samples v1.26.70.23-preview-full
+    # 的 resource_pack/textures/blocks/ 实物中确认目标存在，且语义一一对应
+    # （无"贴错材质"风险）。均属清单范围外的新增，非对既有映射的推翻。
+    "cracked_stone_bricks": ("stonebrick_cracked", "blocks"),       # 裂纹石砖
+    "mossy_stone_bricks": ("stonebrick_mossy", "blocks"),           # 苔藓石砖
+    "dirt_path_side": ("grass_path_side", "blocks"),                # 泥土路径侧面（基岩旧名 grass_path）
+    "dirt_path_top": ("grass_path_top", "blocks"),                  # 泥土路径顶面
+    "flowering_azalea_leaves": ("azalea_leaves_flowers", "blocks"),  # 开花杜鹃叶
+    "stonecutter_saw": ("stonecutter2_saw", "blocks"),              # 切石机锯片（tga）
+    "nether_quartz_ore": ("quartz_ore", "blocks"),                  # 下界石英矿
+    "tall_seagrass_bottom": ("seagrass_doubletall_bottom_a", "blocks"),  # 高海草底（tga）
+    "tall_seagrass_top": ("seagrass_doubletall_top_a", "blocks"),        # 高海草顶（tga）
+    # ---- 2026-11-20 补录：官方实物多面块（ENRO 源包都有，旧映射表缺）----
+    # 三种炉的关态正面（_on 态此前已映射，_off 态缺）
+    "blast_furnace_front": ("blast_furnace_front_off", "blocks"),
+    "furnace_front": ("furnace_front_off", "blocks"),
+    "smoker_front": ("smoker_front_off", "blocks"),
+    # 新版本原木侧面（_top 此前已映射，_side 缺）
+    "cherry_log": ("cherry_log_side", "blocks"),
+    "mangrove_log": ("mangrove_log_side", "blocks"),
+    "pale_oak_log": ("pale_oak_log_side", "blocks"),
+    # 樱桃/红树/苍白橡木门（官方 blocks/ 根）
+    "cherry_door_bottom": ("cherry_door_bottom", "blocks"),
+    "cherry_door_top": ("cherry_door_top", "blocks"),
+    "mangrove_door_bottom": ("mangrove_door_bottom", "blocks"),
+    "mangrove_door_top": ("mangrove_door_top", "blocks"),
+    "pale_oak_door_bottom": ("pale_oak_door_bottom", "blocks"),
+    "pale_oak_door_top": ("pale_oak_door_top", "blocks"),
+    # 工艺台顶面（ENRO 的 crafter_top_crafting → 基岩 crafter_top）
+    "crafter_top_crafting": ("crafter_top", "blocks"),
+    # 绯红/诡异门：官方在 blocks/huge_fungus/ 子目录，名为 *_lower/*_top
+    "crimson_door_bottom": ("crimson_door_lower", "blocks/huge_fungus"),
+    "crimson_door_top": ("crimson_door_top", "blocks/huge_fungus"),
+    "warped_door_bottom": ("warped_door_lower", "blocks/huge_fungus"),
+    "warped_door_top": ("warped_door_top", "blocks/huge_fungus"),
+    # ---- 2026-11-20 第二轮：内容级核查发现的旧名/语义缺口 ----
+    "quartz_pillar": ("quartz_block_lines", "blocks"),            # 石英柱 → 基岩旧名 lines
+    "quartz_pillar_top": ("quartz_block_lines_top", "blocks"),    # 石英柱顶
+    "sugar_cane": ("reeds", "blocks"),                            # 甘蔗 → 基岩旧名 reeds（tga）
+    "terracotta": ("hardened_clay", "blocks"),                    # 陶瓦 → 基岩旧名 hardened_clay
+    "cherry_leaves": ("cherry_leaves", "blocks"),                 # 樱花叶 → 基岩 tga（精确同名入表以触发 tga 输出）
 }
 
 
@@ -293,11 +336,13 @@ def main():
         _names = set(_z.namelist())
 
     def _exists(d, n):
-        if d == "blocks":
-            return any(f"resource_pack/textures/blocks/{n}{e}" in _names
-                       for e in (".png", ".tga", ".jpg"))
+        # d 可为 "blocks"、"blocks/<子目录>"（如 huge_fungus/deepslate）或 "models/armor"
+        base = "resource_pack/textures/" + d
         if d == "models/armor":
-            return f"resource_pack/textures/models/armor/{n}.png" in _names
+            return f"{base}/{n}.png" in _names
+        if d == "blocks" or d.startswith("blocks/"):
+            return any(f"{base}/{n}{e}" in _names
+                       for e in (".png", ".tga", ".jpg"))
         return False
 
     manual_ok = set()

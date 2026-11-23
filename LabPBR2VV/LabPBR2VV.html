@@ -6,109 +6,342 @@
 <title>PBR2VV · LabPBR → 灵动视效 转换器</title>
 <style>
   :root{
-    --bg:#12161a; --card:#1c2229; --card2:#232b33; --line:#303b45;
-    --txt:#e8eef2; --dim:#94a4b0; --green:#7cb342; --green2:#aed581;
-    --amber:#ffb74d; --red:#ef5350; --blue:#64b5f6;
+    --bg:#eef2f6; --card:#ffffff; --card2:#f4f7f9; --line:#e3eaf0;
+    --txt:#16202e; --dim:#63748a; --accent:#0f9d78; --accent-ink:#047857; --green2:#047857;
+    --accent-soft:#e7f6ef; --on-accent:#ffffff; --lg-cut:#0f9d78;
+    --blue:#2563eb; --amber:#b45309; --red:#dc2626;
+    --shadow:0 1px 2px rgba(16,32,48,.04),0 8px 24px rgba(16,32,48,.05);
+    --r:14px; --r-sm:10px;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
-  *{box-sizing:border-box}
+  :root[data-theme="dark"]{
+    --bg:#0b0f14; --card:#151c25; --card2:#1c2530; --line:#2a3642;
+    --txt:#e7eef4; --dim:#95a5b6; --accent:#34d399; --accent-ink:#7ceec0; --green2:#7ceec0;
+    --accent-soft:#123028; --on-accent:#062018; --lg-cut:#34d399;
+    --blue:#6cb4ff; --amber:#ffc277; --red:#ff7a7a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    line-height:1.6;-webkit-font-smoothing:antialiased}
-  .app{max-width:760px;margin:0 auto;padding:18px 14px 60px}
-  header{display:flex;align-items:center;gap:12px;padding:8px 2px 18px}
-  .logo{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--green),#4e7a2a);
-    display:grid;place-items:center;font-size:23px;flex:0 0 auto;box-shadow:0 4px 14px #0006}
-  h1{font-size:19px;margin:0;letter-spacing:.3px}
-  .sub{font-size:12px;color:var(--dim);margin:2px 0 0}
-  .badge{display:inline-block;font-size:11px;padding:2px 9px;border:1px solid var(--green);
-    color:var(--green2);border-radius:20px;margin-left:auto;white-space:nowrap}
-  .note{background:#1a2430;border-left:3px solid var(--blue);padding:10px 12px;border-radius:0 8px 8px 0;
-    font-size:12.5px;color:#c6d6e2;margin-bottom:16px}
-  .steps{display:flex;gap:4px;margin-bottom:16px}
-  .step{flex:1;text-align:center;font-size:11px;color:var(--dim);padding:7px 2px;border-radius:6px;
-    background:var(--card);border:1px solid transparent;transition:.2s}
-  .step.on{background:#2b3a22;border-color:var(--green);color:var(--green2);font-weight:600}
-  .step.done{color:var(--green2)}
-  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;
-    box-shadow:0 2px 12px #0003}
+    font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+  .app{max-width:920px;margin:0 auto;padding:16px 14px 64px}
+
+  /* ── 顶栏 ── */
+  .topbar{display:flex;align-items:center;gap:12px;padding:4px 2px 18px}
+  .logo{width:46px;height:46px;border-radius:14px;flex:0 0 auto;position:relative;
+    background:linear-gradient(135deg,var(--accent),var(--accent-ink));
+    color:var(--on-accent);display:grid;place-items:center;box-shadow:var(--shadow)}
+  .logo svg{width:28px;height:28px}
+  h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--dim);margin:1px 0 0}
+  .tools{display:flex;align-items:center;gap:9px;margin-left:auto}
+  .tbtn{width:38px;height:38px;padding:0;display:grid;place-items:center;border-radius:11px;
+    background:var(--card);color:var(--txt);border:1px solid var(--line);cursor:pointer;transition:.15s}
+  .tbtn:hover{border-color:var(--accent)}
+  .tbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .ic-sun{display:none}.ic-moon{display:block}
+  :root[data-theme="dark"] .ic-sun{display:block}
+  :root[data-theme="dark"] .ic-moon{display:none}
+  .badge{display:inline-block;font-size:11px;padding:5px 12px;border:1px solid var(--accent);
+    color:var(--accent-ink);background:var(--accent-soft);border-radius:20px;white-space:nowrap;font-weight:600}
+
+  /* ── 布局 ── */
+  .shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;align-items:start}
+  .side{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:16px 12px;position:sticky;top:16px;box-shadow:var(--shadow)}
+  .navt{font-size:10px;color:var(--dim);letter-spacing:1.4px;padding:2px 10px 12px;text-transform:uppercase;font-weight:700}
+  .steps{display:flex;flex-direction:column;gap:3px}
+  .step{display:flex;align-items:center;gap:11px;font-size:13px;color:var(--dim);padding:10px;
+    border-radius:var(--r-sm);border:1px solid transparent;transition:.18s}
+  .step .dot{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);flex:0 0 auto;
+    display:grid;place-items:center;font-size:11.5px;background:var(--card2);color:var(--dim);font-weight:600}
+  .step.done{color:var(--txt)}
+  .step.done .dot{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+  .step.on{background:var(--accent-soft);border-color:var(--accent);color:var(--txt);font-weight:650}
+  .step.on .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .num,.tick{line-height:1}
+  .tick{display:none;color:var(--accent-ink)}
+  .step.done .num{display:none}
+  .step.done .tick{display:inline}
+  .step .lbl-s{display:none}
+  .side-foot{font-size:11px;color:var(--dim);padding:14px 10px 2px;margin-top:10px;border-top:1px solid var(--line);line-height:1.65}
+
+  .note{background:var(--accent-soft);border:1px solid var(--line);border-left:3px solid var(--accent);
+    padding:12px 14px;border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:12.5px;color:var(--txt);margin-bottom:14px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
   section[hidden]{display:none}
-  h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
-  h2 .n{width:21px;height:21px;border-radius:6px;background:var(--green);color:#12200a;
-    font-size:12px;display:grid;place-items:center;font-weight:800;flex:0 0 auto}
-  .hint{font-size:12px;color:var(--dim);margin:0 0 14px}
-  .drop{border:2px dashed #43535f;border-radius:12px;padding:26px 14px;text-align:center;cursor:pointer;
-    transition:.2s;background:#161d23}
-  .drop:hover,.drop.over{border-color:var(--green);background:#1b2618}
-  .drop .ic{font-size:34px;display:block;margin-bottom:6px}
-  .drop b{font-size:14px}
-  .drop small{display:block;color:var(--dim);font-size:11.5px;margin-top:5px}
+  h2{font-size:16px;margin:0 0 5px;display:flex;align-items:center;gap:10px;font-weight:650}
+  /* 手风琴折叠：标题可点击，右侧显示状态徽标 + 箭头 */
+  .fold-hd{cursor:pointer;user-select:none;transition:color .15s}
+  .fold-hd:hover{color:var(--accent)}
+  h2 .fold-meta{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;color:var(--dim)}
+  h2 .fold-badge{background:var(--amber);color:#3a2600;padding:2px 8px;border-radius:20px;font-weight:650}
+  h2 .fold-badge.mute{background:var(--card2);color:var(--dim)}
+  h2 .fold-arrow{width:8px;height:8px;border-right:2px solid var(--dim);border-bottom:2px solid var(--dim);
+    transform:rotate(45deg);margin-left:2px;transition:transform .18s}
+  .sec-folded h2 .fold-arrow{transform:rotate(-45deg)}
+  .sec-body{overflow:hidden}
+  .sec-folded .sec-body{display:none}
+  h2.fold-hd .n{flex:none}
+  h2 .n{width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--on-accent);
+    font-size:13px;display:grid;place-items:center;font-weight:700;flex:0 0 auto}
+  .hint{font-size:12px;color:var(--dim);margin:0 0 15px;line-height:1.65}
+
+  /* ── 上传区 ── */
+  .drop{border:2px dashed var(--line);border-radius:12px;padding:30px 14px;text-align:center;cursor:pointer;
+    transition:.2s;background:var(--card2)}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .drop .ic{display:block;margin-bottom:10px;color:var(--accent)}
+  .drop .ic svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .drop b{font-size:14.5px}
+  .drop small{display:block;color:var(--dim);font-size:11.5px;margin-top:6px}
+  .drop.slim{padding:13px 14px}
+  .drop.slim b{font-size:13px}
+  .refbox{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card2);margin-top:14px}
+  .refbox>label{font-size:12.5px;color:var(--txt);margin:0 0 8px;font-weight:650}
+  .refbox .drop{background:var(--card)}
+  .tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid var(--line);
+    background:var(--card2);color:var(--dim);margin-left:4px}
+  .tag.hi{color:var(--accent-ink);border-color:var(--accent);background:var(--accent-soft)}
+  .tag.mid{color:var(--amber)}
   input[type=file]{display:none}
-  .row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-  button{font:inherit;font-size:13px;font-weight:600;border-radius:9px;padding:10px 16px;cursor:pointer;
-    border:1px solid var(--line);background:var(--card2);color:var(--txt);transition:.15s}
-  button:hover:not(:disabled){border-color:var(--green);transform:translateY(-1px)}
+
+  /* ── 官方参考对比 ── */
+  .ref-guide{display:flex;gap:14px;flex-wrap:wrap;background:var(--card2);
+    border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin:0 0 12px}
+  .ref-guide .gi{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--dim);line-height:1.4;flex:1;min-width:150px}
+  .ref-guide .gv{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1;flex:0 0 auto}
+  .ref-guide .gi-ok .gv{color:var(--accent-ink)} .ref-guide .gi-todo .gv{color:var(--amber)}
+  .ref-guide .gi b{color:var(--txt)}
+  .stats .stat.ok b{color:var(--accent-ink)} .stats .stat.todo b{color:var(--amber)}
+  .reflist{display:flex;flex-direction:column;gap:11px;max-height:480px;overflow:auto;padding:2px 4px 2px 2px}
+  .refcard{border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:12px;
+    padding:14px;background:var(--card);transition:background .15s,border-color .15s}
+  .refcard.loc{border-left-color:var(--blue)}
+  .refcard.unver{border-left-color:var(--red)}
+  .refcard.adopted{background:var(--accent-soft);border-color:var(--accent)}
+  .rc-head{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap}
+  .rc-name{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--txt);flex:1;min-width:120px;word-break:break-all}
+  .rc-badge{font-size:10.5px;padding:3px 10px;border-radius:20px;white-space:nowrap;font-weight:650}
+  .rc-badge.loc{color:var(--blue);background:rgba(37,99,235,.11)}
+  .rc-badge.cand{color:var(--amber);background:rgba(180,83,9,.12)}
+  .rc-badge.unver{color:var(--red);background:rgba(220,38,38,.1)}
+  .rc-adopt{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt);cursor:pointer;
+    margin:0;font-weight:650;padding:5px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card2);user-select:none}
+  .rc-adopt input{margin:0;accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+  .cmp{display:flex;align-items:stretch;gap:9px}
+  .cmp-col{flex:1;min-width:0;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .cmp-col.official{border-color:rgba(37,99,235,.42)}
+  .cmp-col .lbl{display:block;font-size:10px;color:var(--dim);margin-bottom:5px;font-weight:600}
+  .cmp-col .path{display:block;font-family:var(--mono);font-size:10.5px;color:var(--txt);word-break:break-all;line-height:1.55}
+  .cmp-col .path .fn{color:var(--accent-ink);font-weight:700}
+  .cmp-col.official .path .fn{color:var(--blue)}
+  .cmp-arrow{display:grid;place-items:center;color:var(--dim);font-size:18px;flex:0 0 20px}
+  .rc-opts{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .cand-pill{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--line);
+    background:var(--card2);border-radius:9px;padding:8px 10px;cursor:pointer;transition:.13s;margin:0;min-height:38px}
+  .cand-pill:hover{border-color:var(--accent)}
+  .cand-pill.on{border-color:var(--accent);background:var(--accent-soft)}
+  .cand-pill.conflict{opacity:.72}
+  .cand-pill.conflict.on{border-color:var(--red)}
+  .cand-pill .rad{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--dim);flex:0 0 auto;position:relative}
+  .cand-pill.on .rad{border-color:var(--accent)}
+  .cand-pill.on .rad:after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .cand-pill .nm{font-family:var(--mono);font-size:11px;color:var(--txt);flex:1;word-break:break-all}
+  .cand-pill .sc{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .cand-pill .fl{font-size:10px;padding:2px 6px;border-radius:4px;white-space:nowrap;font-weight:600}
+  .fl-same{color:var(--accent-ink);background:var(--accent-soft)}
+  .fl-cross{color:var(--amber);background:rgba(180,83,9,.12)}
+  .fl-conflict{color:var(--red);background:rgba(220,38,38,.1)}
+  .rc-fix{width:100%;font-family:var(--mono);font-size:12px;padding:9px 10px;margin-top:9px}
+  .ref-empty{text-align:center;color:var(--accent-ink);font-size:13px;padding:30px 0;font-weight:600}
+  .refbar{position:sticky;bottom:0;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px;
+    box-shadow:0 -4px 20px rgba(16,32,48,.1)}
+  .refbar .cnt{font-size:12.5px;color:var(--txt);margin-right:auto}
+  .refbar .cnt b{color:var(--accent-ink);font-size:17px;font-family:var(--mono)}
+
+  /* ── 通用控件 ── */
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  button{font:inherit;font-size:13px;font-weight:650;border-radius:10px;padding:11px 18px;cursor:pointer;
+    border:1px solid var(--line);background:var(--card2);color:var(--txt);transition:.15s;min-height:42px}
+  button:hover:not(:disabled){border-color:var(--accent)}
   button:disabled{opacity:.45;cursor:not-allowed}
-  button.primary{background:var(--green);color:#10200a;border-color:var(--green)}
-  button.primary:hover:not(:disabled){background:var(--green2)}
+  button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+  button.primary:hover:not(:disabled){filter:brightness(1.08)}
   button.ghost{background:transparent}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
-  .stat{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:9px 6px;text-align:center}
-  .stat b{display:block;font-size:20px;color:var(--green2);line-height:1.2}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:14px 0}
+  .stat{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:12px 6px;text-align:center}
+  .stat b{display:block;font-size:23px;color:var(--accent-ink);line-height:1.2;font-weight:700;font-family:var(--mono)}
   .stat span{font-size:10.5px;color:var(--dim)}
-  table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
-  th,td{text-align:left;padding:6px 7px;border-bottom:1px solid var(--line);word-break:break-all}
-  th{color:var(--dim);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
-  td.mono{font-family:var(--mono);font-size:10.5px}
-  .ok{color:var(--green2)} .warn{color:var(--amber)} .err{color:var(--red)}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  label{display:block;font-size:11.5px;color:var(--dim);margin-bottom:4px}
-  input[type=text],select,textarea{width:100%;background:#141a20;border:1px solid var(--line);color:var(--txt);
-    border-radius:8px;padding:9px 10px;font:inherit;font-size:12.5px;outline:none}
-  input:focus,select:focus,textarea:focus{border-color:var(--green)}
-  textarea{font-family:var(--mono);font-size:11px;min-height:66px;resize:vertical}
-  .chk{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--txt);margin:7px 0;cursor:pointer}
-  .chk input{margin-top:4px;accent-color:var(--green);flex:0 0 auto}
-  .chk small{color:var(--dim);font-size:11px;display:block}
-  .bar{height:8px;background:#0e1317;border-radius:20px;overflow:hidden;margin:10px 0 6px}
-  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .2s}
-  .log{background:#0d1216;border:1px solid var(--line);border-radius:8px;padding:10px;height:160px;
-    overflow:auto;font-family:var(--mono);font-size:10.5px;color:#a8bcc9;white-space:pre-wrap}
-  .log .e{color:var(--red)} .log .w{color:var(--amber)} .log .g{color:var(--green2)}
-  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
-  summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--green2)}
-  details p,details li{font-size:12px;color:#c2cfd8}
-  details code{font-family:var(--mono);background:#0e1419;padding:1px 5px;border-radius:4px;color:var(--green2)}
-  footer{text-align:center;font-size:11px;color:#667683;line-height:1.9}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;table-layout:fixed}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);word-break:break-all}
+  th{color:var(--dim);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+  td.mono{font-family:var(--mono);font-size:11px}
+  .ok{color:var(--accent-ink)} .warn{color:var(--amber)} .err{color:var(--red)} .dim{color:var(--dim)}
+  .mono{font-family:var(--mono)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;font-weight:600}
+  input[type=text],select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    border-radius:9px;padding:10px 11px;font:inherit;font-size:13px;outline:none;min-height:42px}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  textarea{font-family:var(--mono);font-size:11.5px;min-height:70px;resize:vertical}
+  .chk{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--txt);margin:9px 0;cursor:pointer}
+  .chk input{margin-top:4px;accent-color:var(--accent);flex:0 0 auto;width:16px;height:16px}
+  .chk small{color:var(--dim);font-size:11px;display:block;font-weight:400;line-height:1.55}
+  .bar{height:9px;background:var(--card2);border-radius:20px;overflow:hidden;margin:12px 0 8px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-ink));transition:width .2s}
+  .log{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:11px;height:170px;
+    overflow:auto;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:pre-wrap}
+  .log .e{color:var(--red)} .log .w{color:var(--amber)} .log .g{color:var(--accent-ink)}
+  /* 转换流程节点画布：由真实转换计数驱动，节点亮起+实时数字 */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 12px}
+  .fnode{position:relative;background:var(--card2);border:1px solid var(--line);border-radius:10px;
+    padding:9px 10px;min-height:66px;transition:border-color .25s,background .25s,transform .25s;overflow:hidden}
+  .fnode .fk{font-size:10px;color:var(--dim);letter-spacing:.3px;display:flex;align-items:center;gap:5px}
+  .fnode .fk i{width:6px;height:6px;border-radius:50%;background:var(--line);flex:none;transition:background .25s}
+  .fnode .fv{font-family:var(--mono);font-size:19px;font-weight:650;color:var(--dim);margin-top:5px;line-height:1;transition:color .25s}
+  .fnode .fv small{font-size:10px;font-weight:400;color:var(--dim);margin-left:3px}
+  .fnode .fd{font-size:10px;color:var(--dim);margin-top:4px;line-height:1.4;min-height:14px}
+  .fnode.on{border-color:var(--accent);background:var(--card)}
+  .fnode.on .fk i{background:var(--accent)}
+  .fnode.on .fv{color:var(--accent-ink)}
+  .fnode.hot{animation:fpulse 1.1s ease-in-out infinite}
+  @keyframes fpulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 3px var(--accent-soft)}}
+  .fnode .fbar{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--accent);transition:width .3s}
+  .fnode.src .fk i{background:var(--blue)} .fnode.src.on{border-color:var(--blue)}
+  .fnode.src.on .fv{color:var(--blue)} .fnode.src .fbar{background:var(--blue)}
+  .flow-cap{display:flex;align-items:center;justify-content:space-between;margin:2px 0 0;font-size:10.5px;color:var(--dim)}
+  .flow-cap b{color:var(--accent-ink);font-weight:600}
+  @media(max-width:560px){.flow{grid-template-columns:repeat(2,1fr)}}
+  /* 转换配置内的节点画布：由本步骤真实配置项驱动亮灭，表达「当前会启用哪些转换方式」 */
+  .cfgflow-wrap{margin:14px 0 2px;padding-top:12px;border-top:1px dashed var(--line)}
+  .fnode.cfg{min-height:70px}
+  .fnode.cfg .fv{font-size:13.5px;font-weight:650;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fnode.cfg .fv small{font-size:10px;font-weight:400}
+  .fnode.cfg .fd{min-height:26px;font-size:9.5px;color:var(--dim)}
+  .fnode.cfg.off{opacity:.5}
+  /* 浅色背景下整体半透明会让「关闭」节点淡到看不清，改用虚线边框 + 轻度淡化，保持可读 */
+  :root[data-theme="light"] .fnode.cfg.off{opacity:.85;border-style:dashed}
+  .fnode.cfg.off .fk i{background:var(--line)}
+  .cfg-hint{font-size:11px;color:var(--dim);line-height:1.65;margin:0 0 10px}
+  .cfg-hint b{color:var(--accent-ink)}
+  .cfg-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--dim);margin:6px 0 0}
+  .cfg-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  details{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  summary{cursor:pointer;font-size:13.5px;font-weight:650;color:var(--accent-ink)}
+  details p,details li,.modal-body p,.modal-body li{font-size:12px;color:var(--dim);line-height:1.7;margin:10px 0}
+  details code,.modal-body code{font-family:var(--mono);background:var(--card2);padding:2px 6px;border-radius:5px;color:var(--accent-ink)}
+  footer{text-align:center;font-size:11px;color:var(--dim);line-height:1.9}
+  footer code{font-family:var(--mono)}
+  /* ── 技术说明弹窗 ── */
+  .modal-mask{position:fixed;inset:0;z-index:1000;background:rgba(6,12,20,.55);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+  .modal-mask[hidden]{display:none!important}
+  .modal{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);width:min(680px,100%);max-height:min(86vh,760px);display:flex;flex-direction:column;overflow:hidden}
+  .modal-hd{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .modal-hd h3{margin:0;font-size:14.5px;font-weight:700;color:var(--txt)}
+  .modal-x{margin-left:auto;flex:0 0 auto;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--dim);font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center;min-height:0}
+  .modal-body{padding:6px 18px 22px;overflow:auto;overscroll-behavior:contain}
+  .modal-body table{width:100%;border-collapse:collapse;margin:10px 0 14px;font-size:11.5px}
   .pill{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:6px;
-    padding:1px 6px;font-family:var(--mono);font-size:10.5px}
-  @media(max-width:520px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
-    .badge{display:none}h1{font-size:17px}}
+    padding:2px 7px;font-family:var(--mono);font-size:10.5px}
+
+  /* ── 平板 / 桌面增强 ── */
+  @media(min-width:721px){
+    .step .lbl-s{display:none}
+  }
+
+  /* ── 手机优先适配 ── */
+  @media(max-width:720px){
+    .app{padding:12px 11px 60px}
+    .topbar{gap:10px;padding:2px 2px 14px}
+    .logo{width:42px;height:42px;border-radius:12px}
+    .logo svg{width:25px;height:25px}
+    h1{font-size:16px}
+    .sub{font-size:11px}
+    .badge{display:none}
+    .shell{grid-template-columns:1fr;gap:12px}
+    .side{position:static;padding:12px 8px}
+    .navt,.side-foot{display:none}
+    .steps{flex-direction:row;gap:2px}
+    .step{flex:1 1 0;flex-direction:column;gap:5px;justify-content:center;padding:9px 2px;text-align:center;min-width:0}
+    .step .dot{width:26px;height:26px}
+    .step .lbl{display:none}
+    .step .lbl-s{display:block;font-size:11px;font-weight:600;white-space:nowrap}
+    section{padding:16px 14px;border-radius:12px}
+    h2{font-size:15px}
+    .grid{grid-template-columns:1fr;gap:13px}
+    .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+    .stat b{font-size:21px}
+    .cmp{flex-direction:column;gap:7px}
+    .cmp-arrow{transform:rotate(90deg);height:18px;flex:0 0 18px}
+    .ref-guide{flex-direction:column;gap:12px}
+    .ref-guide .gi{min-width:0}
+    .refbar{position:static;border-radius:11px}
+    .refbar .cnt{margin-right:0;width:100%;text-align:center;padding-bottom:2px}
+    .refbar button{flex:1 1 auto}
+    .row button{flex:1 1 auto}
+    button{min-height:44px}
+    .cand-pill{min-height:42px}
+    .rc-adopt{min-height:34px}
+    table{font-size:11px}
+    .modal-mask{padding:0;align-items:flex-end}
+    .modal{width:100%;max-height:92vh;border-radius:18px 18px 0 0}
+    .modal-x{width:40px;height:40px}
+  }
+  @media(max-width:380px){
+    .step .lbl-s{font-size:10px}
+    .ref-guide .gv{font-size:21px}
+  }
 </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <div class="logo">◈</div>
-    <div>
-      <h1>PBR2VV · 材质转换器</h1>
-      <p class="sub">LabPBR 材质包 → 基岩版灵动视效 .mcpack</p>
+  <div class="topbar">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2.8 20 7.4 12 12 4 7.4Z" fill="currentColor"/>
+        <path d="M4 7.4 12 12 12 21 4 16.4Z" fill="currentColor" fill-opacity=".72"/>
+        <path d="M20 7.4 12 12 12 21 20 16.4Z" fill="currentColor" fill-opacity=".5"/>
+        <path d="M12 5.1 16 7.4 12 9.7 8 7.4Z" fill="var(--lg-cut)"/>
+        <path d="M12 5.1 16 7.4 12 9.7 8 7.4Z" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width=".45"/>
+      </svg>
     </div>
-    <span class="badge">本地运行 · 不上传</span>
-  </header>
-
-  <div class="note">
-    这是 <b>M0 设计原型</b>（配套设计文档 <span class="pill">14_LabPBR转VV安卓App设计.md</span>）。
-    转换引擎是<b>真实可用</b>的：读 ZIP → 通道换算 → 32-bit BGRA TGA → 生成 texture_set / manifest → 打包 .mcpack。
-    正式 APK 把本页内嵌进 WebView，原生侧只负责选文件与导出。
+    <div>
+      <h1>材质转换器</h1>
+      <p class="sub">LabPBR → 灵动视效 .mcpack</p>
+    </div>
+    <div class="tools">
+      <button class="tbtn" id="techBtn" title="技术说明 · 通道映射与格式" aria-label="技术说明">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>
+      </button>
+      <button class="tbtn" id="themeBtn" title="切换深浅主题" aria-label="切换深浅主题">
+        <svg class="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg>
+        <svg class="ic-moon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+      </button>
+      <span class="badge">本地运行 · 不上传</span>
+    </div>
   </div>
 
-  <div class="steps">
-    <div class="step on" id="st1">① 选包</div>
-    <div class="step" id="st2">② 扫描</div>
-    <div class="step" id="st3">③ 配置</div>
-    <div class="step" id="st4">④ 转换</div>
-    <div class="step" id="st5">⑤ 导出</div>
+  <div class="shell">
+  <nav class="side">
+    <div class="navt">转换流程</div>
+    <div class="steps">
+      <div class="step on" id="st1"><span class="dot"><span class="num">1</span><span class="tick">✓</span></span><span class="lbl">选择材质包</span><span class="lbl-s">选包</span></div>
+      <div class="step" id="st2"><span class="dot"><span class="num">2</span><span class="tick">✓</span></span><span class="lbl">扫描结果</span><span class="lbl-s">扫描</span></div>
+      <div class="step" id="st3"><span class="dot"><span class="num">3</span><span class="tick">✓</span></span><span class="lbl">转换配置</span><span class="lbl-s">配置</span></div>
+      <div class="step" id="st4"><span class="dot"><span class="num">4</span><span class="tick">✓</span></span><span class="lbl">正在转换</span><span class="lbl-s">转换</span></div>
+      <div class="step" id="st5"><span class="dot"><span class="num">5</span><span class="tick">✓</span></span><span class="lbl">导出成品</span><span class="lbl-s">导出</span></div>
+    </div>
+    <div class="side-foot">整个转换都在你的浏览器里完成，材质包不会上传到任何服务器。</div>
+  </nav>
+
+  <main>
+  <div class="note">
+    转换引擎<b>真实可用且完全离线</b>：读 ZIP → 通道换算 → 32-bit BGRA TGA → 生成 texture_set / manifest → 打包 .mcpack。
+    本页面零后端、零权限、零外部资源，电脑或手机浏览器直接打开即可运行，材质包不会上传。
   </div>
 
   <!-- ① 选包 -->
@@ -116,11 +349,20 @@
     <h2><span class="n">1</span>选择 Java 材质包</h2>
     <p class="hint">支持 .zip 资源包；需含 <span class="pill">assets/*/textures/</span> 下的 .png 与同名 _s / _n 贴图。包名、介绍（<span class="pill">pack.mcmeta</span> 的 description）与展示图标自动从源包读取；输出的基岩版介绍会附上转换时间、工具与选项记录。</p>
     <div class="drop" id="drop">
-      <span class="ic">📦</span>
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 4 6v12l8 4 8-4V6l-8-4Z"/><path d="M4 6l8 4 8-4M12 10v12"/></svg></span>
       <b>点击选择或拖入 .zip</b>
       <small>文件不会离开本机 · 无需网络权限</small>
     </div>
     <input type="file" id="file" accept=".zip,.mcpack,application/zip">
+    <div class="refbox">
+      <label>官方参考基岩包（可选 · 推荐）
+        <span style="font-size:11px;color:var(--dim);font-weight:400"> 先对比再转换 · 只读取纹理名与路径，不复制官方素材进成品</span></label>
+      <div class="drop slim" id="refdrop">
+        <b>点击选择 bedrock-samples .zip</b>
+        <small id="refhint">已内置官方清单，无需上传即可对比 · 上传新版本官方包可覆盖内置清单（任意顺序）</small>
+      </div>
+      <input type="file" id="reffile" accept=".zip,application/zip">
+    </div>
     <div class="row">
       <button class="ghost" id="demo">生成演示包并载入</button>
       <span style="font-size:11px;color:var(--dim);align-self:center" id="zipmode">引擎检测中…</span>
@@ -129,7 +371,8 @@
 
   <!-- ② 扫描 -->
   <section id="s2" hidden>
-    <h2><span class="n">2</span>扫描结果</h2>
+    <h2 class="fold-hd" data-fold><span class="n">2</span>扫描结果<span class="fold-meta"><span class="fold-arrow"></span></span></h2>
+    <div class="sec-body">
     <p class="hint">按同目录同基名配对 <span class="pill">&lt;name&gt;.png / _s.png / _n.png</span>。 <b style="color:var(--green2)">点击表格任意一行可预览该组的材质通道。</b></p>
     <div class="stats" id="stats"></div>
     <div style="max-height:230px;overflow:auto">
@@ -141,11 +384,32 @@
       <div id="pv-imgs" style="display:flex;flex-wrap:wrap;gap:12px"></div>
       <div id="pv-stats" style="margin-top:10px;font-size:12px;color:var(--dim);line-height:1.6"></div>
     </div>
+    </div>
+  </section>
+
+  <!-- ②b 官方参考对比 -->
+  <section id="s2b" hidden>
+    <h2 class="fold-hd" data-fold><span class="n">◎</span>官方参考对比<span class="fold-meta"><span id="foldbadge-s2b" class="fold-badge"></span><span class="fold-arrow"></span></span></h2>
+    <div class="sec-body">
+    <p class="hint">把 Java 贴图的<b>名字 + 目录</b>与官方基岩包核对。<b>下面只列出需要你决定的项</b>：每张卡片左边是当前转换结果，右边是官方建议——确认某条建议后，勾选该卡片的「采纳」，最后点底部按钮一次性写入。官方包始终只是证据，不参与成品写入。</p>
+    <div class="stats" id="refstats"></div>
+    <div class="ref-guide" id="refguide"></div>
+    <p class="hint" id="refwarn" style="margin:0 0 11px"></p>
+    <div class="reflist" id="reflist"></div>
+    <div class="refbar">
+      <span class="cnt">已勾选 <b id="refselcount">0</b> 项</span>
+      <button id="refall" class="ghost">全部采纳</button>
+      <button id="refnone" class="ghost">取消全选</button>
+      <button class="primary" id="applyref">采用勾选 → 写入配置</button>
+      <span id="refapplynote" style="font-size:11px;color:var(--dim);align-self:center"></span>
+    </div>
+    </div>
   </section>
 
   <!-- ③ 配置 -->
   <section id="s3" hidden>
-    <h2><span class="n">3</span>转换配置</h2>
+    <h2 class="fold-hd" data-fold><span class="n">3</span>转换配置<span class="fold-meta"><span class="fold-arrow"></span></span></h2>
+    <div class="sec-body">
     <div class="grid">
       <div><label>资源包名称（自动识别，可修改）</label><input type="text" id="packname" value="My LabPBR Pack"></div>
       <div><label>目标引擎版本</label>
@@ -164,7 +428,7 @@
       </div>
       <div><label>名称映射（自定义覆盖，JSON）</label>
         <textarea id="mapjson" spellcheck="false">{}</textarea>
-        <small style="display:block;color:var(--dim);font-size:11px;margin-top:4px">已内置 <b>445</b> 条 Java→基岩映射（见 15_纹理名映射表.md）；此处只填需要覆盖的条目，优先级最高。</small>
+        <small style="display:block;color:var(--dim);font-size:11px;margin-top:4px">已内置 <b>493</b> 条 Java→基岩映射；此处只填需要覆盖的条目，优先级最高。支持 <span class="mono">"java名":"基岩名"</span>（改名）或 <span class="mono">"java名":{"name":"基岩名","dir":"blocks/deepslate"}</span>（改名 + 指定官方目录，用于修正位置差异）。</small>
       </div>
       <div><label>基岩包封面（游戏内显示，可选）</label>
         <input type="file" id="iconfile" accept="image/png,image/jpeg,.png,.jpg,.jpeg">
@@ -187,12 +451,46 @@
       <label class="chk"><input type="checkbox" id="optBed" checked>
         <span>床贴图 UV 重排（Java 两岛 → 基岩单岛）<small>512² 床图对齐基岩几何体 UV：主岛删缝 + 床尾木架用基岩镂空规格（修复"床腿缺透明"）+ Java 木纹；基色/MERS/法线三者同步重排。非 512² 床图不受影响</small></span></label>
     </div>
+
+    <!-- ③ 配置内 · 转换流程节点画布：由本步骤真实配置项驱动，区别使用哪些转换方式 -->
+    <div class="cfgflow-wrap">
+      <div class="flow-cap"><span>转换流程 · 当前配置决定启用哪些转换方式</span><span id="cfgflowstate">开关即时联动</span></div>
+      <div class="cfg-legend">
+        <span><i style="background:var(--blue)"></i>输入 / 证据（转换前既成事实）</span>
+        <span><i style="background:var(--accent)"></i>本配置已启用</span>
+        <span><i style="background:var(--line)"></i>本配置已关闭</span>
+      </div>
+      <p class="cfg-hint">每个节点对应一类转换方式，<b>高亮 = 会执行、灰暗 = 已关闭</b>。改动上方开关或名称映射，这里即时更新——这是「区别使用哪种转换方式」的配置视图；各节点<b>实际处理量</b>在第 4 步运行时画布显示。</p>
+      <div class="flow" id="cfgflow">
+        <div class="fnode src cfg" data-k="input"><div class="fk"><i></i>Java 贴图</div><div class="fv" data-v>—</div><div class="fd" data-d>第 1 步载入</div><div class="fbar"></div></div>
+        <div class="fnode src cfg" data-k="ref"><div class="fk"><i></i>官方对比</div><div class="fv" data-v>—</div><div class="fd" data-d>第 2 步证据</div><div class="fbar"></div></div>
+        <div class="fnode cfg" data-k="name"><div class="fk"><i></i>重命名映射</div><div class="fv" data-v>—</div><div class="fd" data-d>内置 + 自定义</div><div class="fbar"></div></div>
+        <div class="fnode cfg" data-k="channel"><div class="fk"><i></i>通道换算</div><div class="fv" data-v>—</div><div class="fd" data-d>_s → MERS</div><div class="fbar"></div></div>
+        <div class="fnode cfg" data-k="normal"><div class="fk"><i></i>法线重建</div><div class="fv" data-v>—</div><div class="fd" data-d>由开关决定</div><div class="fbar"></div></div>
+        <div class="fnode cfg" data-k="uv"><div class="fk"><i></i>UV 重构</div><div class="fv" data-v>—</div><div class="fd" data-d>由开关决定</div><div class="fbar"></div></div>
+        <div class="fnode cfg" data-k="tga"><div class="fk"><i></i>TGA 编码</div><div class="fv" data-v>—</div><div class="fd" data-d>白名单目标</div><div class="fbar"></div></div>
+        <div class="fnode cfg" data-k="output"><div class="fk"><i></i>输出成品</div><div class="fv" data-v>—</div><div class="fd" data-d>写入 .mcpack</div><div class="fbar"></div></div>
+      </div>
+    </div>
+
     <div class="row"><button class="primary" id="run">开始转换 →</button></div>
+    </div>
   </section>
 
   <!-- ④ 进度 -->
   <section id="s4" hidden>
     <h2><span class="n">4</span>正在转换</h2>
+    <div class="flow-cap"><span>转换流程 · 节点随真实进度点亮</span><span id="flowstate">待开始</span></div>
+    <div class="flow" id="flow">
+      <div class="fnode src" data-k="input"><div class="fk"><i></i>Java 贴图</div><div class="fv" data-v>0<small>组</small></div><div class="fd">已载入的贴图组</div><div class="fbar"></div></div>
+      <div class="fnode src" data-k="ref"><div class="fk"><i></i>官方对比</div><div class="fv" data-v>0<small>项</small></div><div class="fd">名字+目录已确认</div><div class="fbar"></div></div>
+      <div class="fnode" data-k="name"><div class="fk"><i></i>重命名映射</div><div class="fv" data-v>0<small>组</small></div><div class="fd">内置+自定义命中</div><div class="fbar"></div></div>
+      <div class="fnode" data-k="channel"><div class="fk"><i></i>通道换算</div><div class="fv" data-v>0<small>张</small></div><div class="fd">_s → MERS</div><div class="fbar"></div></div>
+      <div class="fnode" data-k="normal"><div class="fk"><i></i>法线重建</div><div class="fv" data-v>0<small>张</small></div><div class="fd">_n → 重算 Z</div><div class="fbar"></div></div>
+      <div class="fnode" data-k="uv"><div class="fk"><i></i>UV 重构</div><div class="fv" data-v>0<small>张</small></div><div class="fd">床 512² 两岛→单岛</div><div class="fbar"></div></div>
+      <div class="fnode" data-k="tga"><div class="fk"><i></i>TGA 编码</div><div class="fv" data-v>0<small>张</small></div><div class="fd">白名单目标</div><div class="fbar"></div></div>
+      <div class="fnode" data-k="output"><div class="fk"><i></i>输出成品</div><div class="fv" data-v>0<small>文件</small></div><div class="fd">写入 .mcpack</div><div class="fbar"></div></div>
+    </div>
     <div class="bar"><i id="bar"></i></div>
     <p class="hint" id="ptext" style="margin:0 0 8px">准备中…</p>
     <div class="log" id="log"></div>
@@ -204,15 +502,30 @@
     <div class="stats" id="rstats"></div>
     <p class="hint" id="rsummary"></p>
     <div class="row">
-      <button class="primary" id="dl">⬇ 下载 .mcpack</button>
+      <button class="primary" id="dl">下载 .mcpack</button>
       <button id="dlreport">下载转换报告</button>
       <button class="ghost" id="again">转换另一个</button>
     </div>
     <p class="hint" style="margin-top:12px">导入方式：把 .mcpack 用基岩版打开即可。若设备不支持 VV，包仍可加载但 PBR 效果不生效。</p>
   </section>
+  </main>
+  </div>
 
-  <details>
-    <summary>技术说明 · 通道映射与格式（点击展开）</summary>
+
+  <footer>
+    PBR2VV · 零后端、零权限、零外部资源（ZIP 读写自实现）<br>
+    通道换算与命名映射的依据见项目「灵动视效资料」文档
+  </footer>
+</div>
+
+<!-- 技术说明弹窗：从主流程剥离，按需打开 -->
+<div class="modal-mask" id="techModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="techTitle">
+    <div class="modal-hd">
+      <h3 id="techTitle">技术说明 · 通道映射与格式</h3>
+      <button class="modal-x" id="techClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
     <p><b>LabPBR <code>_s</code> → MERS 四通道</b>（依据 <code>01_LabPBR材质标准.md</code>、<code>13_纹理文件通道与格式详解.md</code>）：</p>
     <table>
       <thead><tr><th>源</th><th>目标</th><th>公式</th></tr></thead>
@@ -227,19 +540,37 @@
     <p><b>输出格式</b>：<code>_mers.tga</code> 必须是 32-bit <b>BGRA</b>、左下原点、8 alpha bits。PNG 改后缀无效，必须重排通道并翻转行序（Alpha=0 有语义，Photoshop 优化 PNG 会丢 RGB）。<code>texture_set.json</code> 固定 <code>format_version:"1.21.30"</code> + <code>color</code> + <code>metalness_emissive_roughness_subsurface</code>；<code>manifest.json</code> 必须带 <code>capabilities:["pbr"]</code>。解码全程为<b>非预乘</b>逐字节读取：<code>alpha=0</code> 像素的 R/G/B（平滑度/F0/SSS）原样保留，不会像 canvas 预乘那样被抹成 0。</p>
     <p><b>法线</b>：LabPBR <code>_n</code> 的 B 存 AO、A 存高度，Z 用 <code>sqrt(1−dot(n.xy,n.xy))</code> 重建；DirectX Y− 与 VV 同向，不需翻转 G（该结论来自第三方转换器实现，非 Mojang 官方明文，故保留开关）。</p>
     <p><b>已知信息损失</b>：介电质 F0（G 0–229）、孔隙率（B 0–64）、材质 AO、POM 高度 —— VV 无对应通道，转换报告会列出丢弃的像素数。</p>
-  </details>
-
-  <footer>
-    PBR2VV M0 原型 · 零后端、零权限、零外部资源（ZIP 读写自实现）<br>
-    设计文档与资料：<code>/workspace/灵动视效资料/14_LabPBR转VV安卓App设计.md</code>
-  </footer>
+    </div>
+  </div>
 </div>
 
 <script>
 "use strict";
-/* ============ 小工具 ============ */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
+/* ============ 主题：跟随系统 + 手动切换记忆 ============ */
+const THEME_KEY = 'pbr2vv-theme';
+const root = document.documentElement;
+const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+(function initTheme(){
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
+  root.setAttribute('data-theme', saved === 'light' || saved === 'dark'
+    ? saved : (mq && mq.matches ? 'dark' : 'light'));
+})();
+$('#themeBtn').addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+});
+if (mq && mq.addEventListener){
+  mq.addEventListener('change', e => {
+    let saved = null; try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
+    if (saved !== 'light' && saved !== 'dark') root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+  });
+}
+
+/* ============ 小工具 ============ */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const frame = () => new Promise(r => requestAnimationFrame(() => r()));
 function uuid(){
@@ -252,6 +583,106 @@ function setStep(n){
   $$('.step').forEach((el,i) => {
     el.className = 'step' + (i+1===n ? ' on' : (i+1<n ? ' done' : ''));
   });
+  // 聚焦当前步骤：展开它，收起其他步骤的内容，页面不再一眼望不到底。
+  if (n === 1){ collapseSec('s2'); collapseSec('s2b'); collapseSec('s3'); }
+  if (n === 2){ expandSec('s2'); expandSec('s2b'); collapseSec('s3'); }
+  if (n === 3){ collapseSec('s2'); collapseSec('s2b'); expandSec('s3'); }
+  if (n === 4){ collapseSec('s2'); collapseSec('s2b'); collapseSec('s3'); }
+}
+// ===== 手风琴折叠：一次只展开当前步骤，降低"又长又密集"的压迫感 =====
+function initFold(){
+  $$('section:has(h2[data-fold])').forEach(sec => {
+    const hd = sec.querySelector('h2[data-fold]');
+    if (sec.dataset.foldReady) return;
+    sec.dataset.foldReady = '1';
+    hd.addEventListener('click', () => {
+      const folded = sec.classList.toggle('sec-folded');
+      if (!folded) sec.scrollIntoView({behavior:'smooth', block:'nearest'});
+      if (!folded && sec.id === 's3') cfgFlowUpdate();   // 展开配置步骤时按最新配置重画节点
+    });
+  });
+}
+function expandSec(id){ const s = document.getElementById(id); if (s) s.classList.remove('sec-folded'); }
+function collapseSec(id){ const s = document.getElementById(id); if (s) s.classList.add('sec-folded'); }
+function updateFoldBadges(){
+  const b = document.getElementById('foldbadge-s2b');
+  if (!b || !REF_RESULT) return;
+  const st = REF_RESULT.stat, need = (st.location||0) + (st.candidates||0) + (st.unverified||0);
+  b.textContent = need ? (need + ' 项待你决定') : '全部一致';
+  b.className = 'fold-badge' + (need ? '' : ' mute');
+}
+/* ---- 转换流程节点画布：由 convert() 的真实计数实时驱动 ----
+   flowUpdate 只负责把传入的真实数值画到节点上；不产生数据、不参与转换逻辑。 */
+function flowUpdate(v, state){
+  const root = $('#flow'); if (!root) return;
+  const nodes = root.querySelectorAll('.fnode');
+  nodes.forEach(n => {
+    const k = n.getAttribute('data-k');
+    const val = v[k];
+    const cell = n.querySelector('[data-v]');
+    if (cell && val != null){
+      const unit = cell.querySelector('small');
+      const u = unit ? unit.outerHTML : '';
+      cell.innerHTML = val.toLocaleString() + u;
+    }
+    const active = val != null && Number(val) > 0;
+    n.classList.toggle('on', active);
+    n.classList.toggle('hot', active && state === 'running');
+    const bar = n.querySelector('.fbar');
+    if (bar) bar.style.width = active ? '100%' : '0%';
+  });
+  const cap = $('#flowstate');
+  if (cap){
+    cap.innerHTML = state === 'running' ? '<b>转换中…</b>'
+      : state === 'done' ? '<b>已完成</b>' : '待开始';
+  }
+}
+function flowReset(){
+  flowUpdate({input:0, ref:0, name:0, channel:0, normal:0, uv:0, tga:0, output:0}, 'idle');
+}
+/* ---- 转换配置 · 节点流程画布：由本步骤真实配置项驱动 ----
+   与第 4 步 flowUpdate 互补：那里显示「实际跑了多少」，这里显示「配置决定启用哪些方式」。
+   只读配置、不改任何转换逻辑；开关变更 / 展开配置步骤 / 载入包 / 采纳映射时即时刷新。 */
+function cfgFlowUpdate(){
+  const root = $('#cfgflow'); if (!root) return;
+  // 读取真实配置（与 convert() 内 opt 的取值方式完全一致）
+  const metal = $('#metal').value;
+  const metalTxt = metal === 'f0' ? 'F0 部分金属' : metal === 'none' ? '全非金属' : '二值金属';
+  const sss     = $('#optSss').checked;
+  const normal  = $('#optNormal').checked;
+  const flip    = $('#optFlip').checked;
+  const fallback= $('#optFallback').checked;
+  const stack   = $('#optStack').checked;
+  const i18n    = $('#optI18n').checked;
+  const bed     = $('#optBed').checked;
+  // 自定义映射条数（解析失败按 0，与 convert() 一样宽容处理）
+  let customN = 0;
+  try { customN = Object.keys(JSON.parse($('#mapjson').value || '{}')).length; } catch(e){}
+  // 官方对比证据：与第 4 步 flowUpdate 同源口径（verified + direct + location），避免两处数字打架
+  const refStat = REF_RESULT ? (REF_RESULT.stat.verified + REF_RESULT.stat.direct + REF_RESULT.stat.location) : 0;
+  const refApplied = REF_RESULT ? (REF_RESULT.applied || 0) : 0;
+  const groupsN = GROUPS.length;
+
+  const V = {
+    input:   {on: groupsN>0, val: groupsN.toLocaleString()+'<small>组</small>', d:'第 1 步已载入的贴图组'},
+    ref:     {on: refStat>0, val: refStat ? refStat.toLocaleString()+'<small>项</small>' : '未对比', d: refStat ? ('名字+目录已确认'+(refApplied ? ' · 已采用 '+refApplied+' 条' : ' · 未采纳（可选）')) : '第 2 步上传官方包后生成'},
+    name:    {on: true,      val: '493<small>条内置</small>', d: customN ? '另叠加 '+customN+' 条自定义覆盖' : '可填自定义覆盖（优先级最高）'},
+    channel: {on: true,      val: metalTxt, d: '_s → MERS · SSS '+(sss?'开':'关')},
+    normal:  {on: normal,    val: normal?'启用':'关闭', d: normal ? ('_n → 重算 Z'+(flip?' · 翻转 Y':'')) : '由「输出法线贴图」开关控制'},
+    uv:      {on: bed,       val: bed?'启用':'关闭', d: bed ? '床 512² 两岛 → 单岛' : '由「床 UV 重排」开关控制'},
+    tga:     {on: true,      val: '白名单', d: '基色按目标名转 BGRA TGA'},
+    output:  {on: true,      val: '.mcpack', d: '回退值 '+(stack?'关（叠加）':fallback?'开':'关')+' · i18n '+(i18n?'开':'关')}
+  };
+  root.querySelectorAll('.fnode').forEach(n => {
+    const s = V[n.getAttribute('data-k')]; if (!s) return;
+    const cell = n.querySelector('[data-v]'); if (cell) cell.innerHTML = s.val;
+    const desc = n.querySelector('[data-d]'); if (desc) desc.textContent = s.d;
+    n.classList.toggle('on', !!s.on);
+    n.classList.toggle('off', !s.on);
+    const bar = n.querySelector('.fbar'); if (bar) bar.style.width = s.on ? '100%' : '0%';
+  });
+  const st = $('#cfgflowstate');
+  if (st) st.innerHTML = '<b>' + Object.values(V).filter(x => x.on).length + '/8 已启用</b>';
 }
 function log(msg, cls){
   const el = $('#log');
@@ -259,6 +690,11 @@ function log(msg, cls){
   if (cls) line.className = cls;
   line.textContent = msg;
   el.appendChild(line); el.scrollTop = el.scrollHeight;
+}
+// 上传包名/贴图名来自外部 ZIP，插入 innerHTML 前一律转义
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 /* ============ ZIP 读（原生 DecompressionStream，无需外部库） ============ */
@@ -348,7 +784,29 @@ function zipStore(entries){
   return new Blob([...parts, ...central, eo], { type:'application/octet-stream' });
 }
 
-/* ============ PNG 解码 / 生成、TGA 编码 ============ */
+/* ══════════════════════════════════════════════════════════════════════
+   ┌───────────────────────────────────────────────────────────────────┐
+   │  转换模块 ConversionModule · Java(LabPBR) → Bedrock(Vibrant Visuals) │
+   └───────────────────────────────────────────────────────────────────┘
+   职责：把一个 Java 资源包的纹理，经下列六类确定性变换，转成基岩 VV 资源包。
+   边界：本模块只做「变换」；输入来自 GROUPS / opt，产物写入 E(条目) 与 OUT。
+         ★ 全程不读取官方包的任何像素——官方包只提供「名字 + 目录」证据，
+           由「官方参考对比」区单独处理，与本模块正交。
+   子模块（按数据流顺序）：
+     [1] 重命名与路径映射  mapName / DIR_REDIRECT / 护甲重映射 / 床特例
+         扫描与映射 → 名字+目录 → 目标 {name, dir}
+     [2] 贴图通道换算      labpbrToMers( _s.RGBA → MERS.RGBA )
+         R平滑度→粗糙度 / G金属·F0→金属度 / A自发光→自发光 / B SSS→次表面
+     [3] 法线重建          splitNormal( _n.RGBA → 重算 Z )
+     [4] UV 几何重构       reuvBed( 512² 床基色 两岛 → 单连通岛 )
+     [5] 格式与编码        encodeTGA / encodePNGBytes / png 生成
+     [6] 辅助变换          overlay 烘焙 / 封面规整 / 输出过滤
+   数据流：scan → [1]mapName → [2][3]通道 → [4]UV → [5]编码([6]辅助) → OUT
+   对外 API：脚本末尾的 ConversionModule 命名空间（仅为同一批函数的引用清单，
+             不是第二份实现），供外部阅读/复用；主流程 convert() 直接调用同名函数。
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ============ [转换模块·5] 格式与编码：PNG 解码/生成、TGA 编码 ============ */
 /* 自实现 PNG 解码：必须绕开 canvas 的预乘 alpha。
    LabPBR 的 _s 用 alpha 通道存自发光，大量像素 alpha=0；
    一旦经过 canvas，alpha=0 区域的 RGB 会被抹成 0，R/G/B 三个材质通道全丢。
@@ -511,7 +969,7 @@ function encodeTGA(w, h, rgba){
 }
 const enc = o => new TextEncoder().encode(JSON.stringify(o, null, 2));
 
-/* ============ 核心：LabPBR → MERS 通道换算 ============ */
+/* ============ [转换模块·2] 贴图通道换算：LabPBR _s → MERS ============ */
 function labpbrToMers(r, g, b, a, opt){
   const s = r/255;
   let rough = Math.pow(1 - s, 2);                 // → MERS.B（01 号文档原文公式）
@@ -525,6 +983,7 @@ function labpbrToMers(r, g, b, a, opt){
   else if (sss > metal) metal = 0;
   return [metal, emis, rough, sss].map(v => Math.round(Math.max(0, Math.min(1, v)) * 255));
 }
+/* [转换模块·3] 法线重建：LabPBR _n 的 B 是 AO，需从 XY 重算 Z */
 function splitNormal(r, g, b, a, flipY){
   const ng = flipY ? (255 - g) : g;              // OpenGL(Y+) → DirectX(Y-) 只需翻转 G
   const x = r/255*2-1, y = ng/255*2-1;
@@ -532,7 +991,7 @@ function splitNormal(r, g, b, a, flipY){
   return [r, ng, Math.round((z*0.5+0.5)*255)];
 }
 
-/* ============ 床 UV 重排（Java 两岛 → 基岩单连通岛）============
+/* ============ [转换模块·4] UV 几何重构：床 UV 重排（Java 两岛 → 基岩单连通岛）============
    Java 床基色 512² 是「主岛(352×354) + 侧岛工字形(96×192)」两块；
    基岩几何体 UV 按单连通岛布局采样，直接复制 Java 图会错位（枕头贴到木头上）。
    用两个真包（ENRO Java ↔ 网易基岩）逐像素标定，主岛 3 段 100% 对齐：
@@ -608,12 +1067,12 @@ function reuvBed(src, w, h, maskAlpha){
   return out;
 }
 
-/* ============ 扫描与映射 ============ */
+/* ============ [转换模块·1] 重命名与路径映射：扫描 / 改名 / 目录重定向 ============ */
 /* Java 资源包纹理基名 → 基岩版纹理基名。由 mapping/build_map.py 生成，
-   依据官方 bedrock-samples v1.26.70.23-preview 实物 + 社区清单，共 484 条。
+   依据官方 bedrock-samples v1.26.70.23-preview 实物 + 社区清单，共 493 条。
    只收录「需要改名」的条目；精确同名无需列出。详见 15_纹理名映射表.md。 */
-const BUILTIN_MAP = {"acacia_boat":"boat_acacia","acacia_door":"door_acacia","acacia_door_bottom":"door_acacia_lower","acacia_door_top":"door_acacia_upper","acacia_leaves":"leaves_acacia","acacia_log":"log_acacia","acacia_log_top":"log_acacia_top","acacia_planks":"planks_acacia","acacia_sapling":"sapling_acacia","acacia_sign":"sign_acacia","activator_rail":"rail_activator","allay_spawn_egg":"spawn_egg_allay","allium":"flower_allium","andesite":"stone_andesite","anvil":"anvil_base","anvil_top":"anvil_top_damaged_0","armadillo_spawn_egg":"spawn_egg_armadillo","attached_melon_stem":"melon_stem_connected","attached_pumpkin_stem":"pumpkin_stem_connected","axolotl_bucket":"bucket_axolotl","axolotl_spawn_egg":"spawn_egg_axolotl","azure_bluet":"flower_houstonia","baked_potato":"potato_baked","bamboo_small_leaves":"bamboo_small_leaf","bamboo_stalk":"bamboo_stem","bat_spawn_egg":"spawn_egg_bat","bee_spawn_egg":"spawn_egg_bee","beetroot_seeds":"seeds_beetroot","beetroots_stage0":"beetroots_stage_0","beetroots_stage1":"beetroots_stage_1","beetroots_stage2":"beetroots_stage_2","beetroots_stage3":"beetroots_stage_3","birch_boat":"boat_birch","birch_door":"door_birch","birch_door_bottom":"door_birch_lower","birch_door_top":"door_birch_upper","birch_leaves":"leaves_birch","birch_log":"log_birch","birch_log_top":"log_birch_top","birch_planks":"planks_birch","birch_sapling":"sapling_birch","birch_sign":"sign_birch","black_bundle":"bundle_black","black_bundle_open_back":"bundle_black_open_back","black_bundle_open_front":"bundle_black_open_front","black_concrete":"concrete_black","black_concrete_powder":"concrete_powder_black","black_glazed_terracotta":"glazed_terracotta_black","black_harness":"harness_black","black_shulker_box":"shulker_top_black","black_stained_glass":"glass_black","black_stained_glass_pane_top":"glass_pane_top_black","black_terracotta":"hardened_clay_stained_black","black_wool":"wool_colored_black","blaze_spawn_egg":"spawn_egg_blaze","blue_bundle":"bundle_blue","blue_bundle_open_back":"bundle_blue_open_back","blue_bundle_open_front":"bundle_blue_open_front","blue_concrete":"concrete_blue","blue_concrete_powder":"concrete_powder_blue","blue_glazed_terracotta":"glazed_terracotta_blue","blue_harness":"harness_blue","blue_orchid":"flower_blue_orchid","blue_shulker_box":"shulker_top_blue","blue_stained_glass":"glass_blue","blue_stained_glass_pane_top":"glass_pane_top_blue","blue_terracotta":"hardened_clay_stained_blue","blue_wool":"wool_colored_blue","bogged_spawn_egg":"spawn_egg_bogged","breeze_spawn_egg":"spawn_egg_breeze","bricks":"brick","brown_bundle":"bundle_brown","brown_bundle_open_back":"bundle_brown_open_back","brown_bundle_open_front":"bundle_brown_open_front","brown_concrete":"concrete_brown","brown_concrete_powder":"concrete_powder_brown","brown_glazed_terracotta":"glazed_terracotta_brown","brown_harness":"harness_brown","brown_mushroom":"mushroom_brown","brown_mushroom_block":"mushroom_block_skin_brown","brown_shulker_box":"shulker_top_brown","brown_stained_glass":"glass_brown","brown_stained_glass_pane_top":"glass_pane_top_brown","brown_terracotta":"hardened_clay_stained_brown","brown_wool":"wool_colored_brown","camel_spawn_egg":"spawn_egg_camel","carrots_stage0":"carrots_stage_0","carrots_stage1":"carrots_stage_1","carrots_stage2":"carrots_stage_2","carved_pumpkin":"pumpkin_face_off","cat_spawn_egg":"spawn_egg_cat","cave_spider_spawn_egg":"spawn_egg_cave_spider","chainmail_layer_1":"chain_1","chainmail_layer_2":"chain_2","chest_minecart":"minecart_chest","chicken_spawn_egg":"spawn_egg_chicken","chipped_anvil_top":"anvil_top_damaged_1","chiseled_quartz_block":"quartz_block_chiseled","chiseled_quartz_block_top":"quartz_block_chiseled_top","cobweb":"web","cocoa_stage0":"cocoa_stage_0","cocoa_stage1":"cocoa_stage_1","cocoa_stage2":"cocoa_stage_2","cod_bucket":"bucket_cod","cod_spawn_egg":"spawn_egg_cod","command_block_minecart":"minecart_command_block","cooked_beef":"beef_cooked","cooked_chicken":"chicken_cooked","cooked_mutton":"mutton_cooked","cooked_porkchop":"porkchop_cooked","cooked_rabbit":"rabbit_cooked","cornflower":"flower_cornflower","cow_spawn_egg":"spawn_egg_cow","creaking_spawn_egg":"spawn_egg_creaking","creeper_spawn_egg":"spawn_egg_creeper","crimson_sign":"sign_crimson","cut_red_sandstone":"red_sandstone_smooth","cut_sandstone":"sandstone_smooth","cyan_bundle":"bundle_cyan","cyan_bundle_open_back":"bundle_cyan_open_back","cyan_bundle_open_front":"bundle_cyan_open_front","cyan_concrete":"concrete_cyan","cyan_concrete_powder":"concrete_powder_cyan","cyan_glazed_terracotta":"glazed_terracotta_cyan","cyan_harness":"harness_cyan","cyan_shulker_box":"shulker_top_cyan","cyan_stained_glass":"glass_cyan","cyan_stained_glass_pane_top":"glass_pane_top_cyan","cyan_terracotta":"hardened_clay_stained_cyan","cyan_wool":"wool_colored_cyan","damaged_anvil_top":"anvil_top_damaged_2","dandelion":"flower_dandelion","dark_oak_boat":"boat_dark_oak","dark_oak_door":"door_dark_oak","dark_oak_door_bottom":"door_dark_oak_lower","dark_oak_door_top":"door_dark_oak_upper","dark_oak_leaves":"leaves_big_oak","dark_oak_log":"log_big_oak","dark_oak_log_top":"log_big_oak_top","dark_oak_planks":"planks_big_oak","dark_prismarine":"prismarine_dark","dead_bush":"deadbush","detector_rail":"rail_detector","diamond_layer_1":"diamond_1","diamond_layer_2":"diamond_2","diorite":"stone_diorite","dolphin_spawn_egg":"spawn_egg_dolphin","donkey_spawn_egg":"spawn_egg_donkey","drowned_spawn_egg":"spawn_egg_drowned","elder_guardian_spawn_egg":"spawn_egg_elder_guardian","elytra_broken":"broken_elytra","enchanted_book":"book_enchanted","end_portal_frame_eye":"endframe_eye","end_portal_frame_side":"endframe_side","end_portal_frame_top":"endframe_top","ender_dragon_spawn_egg":"spawn_egg_ender_dragon","enderman_spawn_egg":"spawn_egg_enderman","endermite_spawn_egg":"spawn_egg_endermite","evoker_spawn_egg":"spawn_egg_evoker","farmland":"farmland_dry","farmland_moist":"farmland_wet","fermented_spider_eye":"spider_eye_fermented","filled_map":"map_filled","fox_spawn_egg":"spawn_egg_fox","frog_spawn_egg":"spawn_egg_frog","furnace_minecart":"minecart_furnace","ghast_spawn_egg":"spawn_egg_ghast","glow_squid_spawn_egg":"spawn_egg_glow_squid","goat_spawn_egg":"spawn_egg_goat","golden_apple":"apple_golden","golden_carrot":"carrot_golden","golden_layer_1":"gold_1","golden_layer_2":"gold_2","granite":"stone_granite","grass_block_side":"grass_side","grass_block_top":"grass_top","gray_bundle":"bundle_gray","gray_bundle_open_back":"bundle_gray_open_back","gray_bundle_open_front":"bundle_gray_open_front","gray_concrete":"concrete_gray","gray_concrete_powder":"concrete_powder_gray","gray_glazed_terracotta":"glazed_terracotta_gray","gray_harness":"harness_gray","gray_shulker_box":"shulker_top_gray","gray_stained_glass":"glass_gray","gray_stained_glass_pane_top":"glass_pane_top_gray","gray_terracotta":"hardened_clay_stained_gray","gray_wool":"wool_colored_gray","green_bundle":"bundle_green","green_bundle_open_back":"bundle_green_open_back","green_bundle_open_front":"bundle_green_open_front","green_concrete":"concrete_green","green_concrete_powder":"concrete_powder_green","green_glazed_terracotta":"glazed_terracotta_green","green_harness":"harness_green","green_shulker_box":"shulker_top_green","green_stained_glass":"glass_green","green_stained_glass_pane_top":"glass_pane_top_green","green_terracotta":"hardened_clay_stained_green","green_wool":"wool_colored_green","guardian_spawn_egg":"spawn_egg_guardian","happy_ghast_spawn_egg":"spawn_egg_happy_ghast","hoglin_spawn_egg":"spawn_egg_hoglin","hopper_minecart":"minecart_hopper","horse_spawn_egg":"spawn_egg_horse","husk_spawn_egg":"spawn_egg_husk","iron_door":"door_iron","iron_golem_spawn_egg":"spawn_egg_iron_golem","iron_layer_1":"iron_1","iron_layer_2":"iron_2","jack_o_lantern":"pumpkin_face_on","jungle_boat":"boat_jungle","jungle_door":"door_jungle","jungle_door_bottom":"door_jungle_lower","jungle_door_top":"door_jungle_upper","jungle_leaves":"leaves_jungle","jungle_log":"log_jungle","jungle_log_top":"log_jungle_top","jungle_planks":"planks_jungle","jungle_sapling":"sapling_jungle","jungle_sign":"sign_jungle","large_fern_bottom":"double_plant_fern_bottom","large_fern_top":"double_plant_fern_top","lava_bucket":"bucket_lava","leather_layer_1":"cloth_1","leather_layer_2":"cloth_2","light_blue_bundle":"bundle_light_blue","light_blue_bundle_open_back":"bundle_light_blue_open_back","light_blue_bundle_open_front":"bundle_light_blue_open_front","light_blue_concrete":"concrete_light_blue","light_blue_concrete_powder":"concrete_powder_light_blue","light_blue_glazed_terracotta":"glazed_terracotta_light_blue","light_blue_harness":"harness_light_blue","light_blue_shulker_box":"shulker_top_light_blue","light_blue_stained_glass":"glass_light_blue","light_blue_stained_glass_pane_top":"glass_pane_top_light_blue","light_blue_terracotta":"hardened_clay_stained_light_blue","light_blue_wool":"wool_colored_light_blue","light_gray_bundle":"bundle_light_gray","light_gray_bundle_open_back":"bundle_light_gray_open_back","light_gray_bundle_open_front":"bundle_light_gray_open_front","light_gray_concrete":"concrete_silver","light_gray_concrete_powder":"concrete_powder_silver","light_gray_glazed_terracotta":"glazed_terracotta_silver","light_gray_harness":"harness_light_gray","light_gray_shulker_box":"shulker_top_silver","light_gray_stained_glass":"glass_silver","light_gray_stained_glass_pane_top":"glass_pane_top_silver","light_gray_terracotta":"hardened_clay_stained_silver","light_gray_wool":"wool_colored_silver","lilac_bottom":"double_plant_syringa_bottom","lilac_top":"double_plant_syringa_top","lily_of_the_valley":"flower_lily_of_the_valley","lily_pad":"waterlily","lime_bundle":"bundle_lime","lime_bundle_open_back":"bundle_lime_open_back","lime_bundle_open_front":"bundle_lime_open_front","lime_concrete":"concrete_lime","lime_concrete_powder":"concrete_powder_lime","lime_glazed_terracotta":"glazed_terracotta_lime","lime_harness":"harness_lime","lime_shulker_box":"shulker_top_lime","lime_stained_glass":"glass_lime","lime_stained_glass_pane_top":"glass_pane_top_lime","lime_terracotta":"hardened_clay_stained_lime","lime_wool":"wool_colored_lime","llama_spawn_egg":"spawn_egg_llama","magenta_bundle":"bundle_magenta","magenta_bundle_open_back":"bundle_magenta_open_back","magenta_bundle_open_front":"bundle_magenta_open_front","magenta_concrete":"concrete_magenta","magenta_concrete_powder":"concrete_powder_magenta","magenta_glazed_terracotta":"glazed_terracotta_magenta","magenta_harness":"harness_magenta","magenta_shulker_box":"shulker_top_magenta","magenta_stained_glass":"glass_magenta","magenta_stained_glass_pane_top":"glass_pane_top_magenta","magenta_terracotta":"hardened_clay_stained_magenta","magenta_wool":"wool_colored_magenta","magma_cube_spawn_egg":"spawn_egg_magma_cube","melon_seeds":"seeds_melon","melon_stem":"melon_stem_disconnected","milk_bucket":"bucket_milk","mooshroom_spawn_egg":"spawn_egg_mooshroom","mossy_cobblestone":"cobblestone_mossy","mule_spawn_egg":"spawn_egg_mule","mushroom_stem":"mushroom_block_skin_stem","nether_wart_stage0":"nether_wart_stage_0","nether_wart_stage1":"nether_wart_stage_1","nether_wart_stage2":"nether_wart_stage_2","netherite_layer_1":"netherite_1","netherite_layer_2":"netherite_2","note_block":"noteblock","oak_boat":"boat_oak","oak_door_bottom":"door_wood_lower","oak_door_top":"door_wood_upper","oak_leaves":"leaves_oak","oak_log":"log_oak","oak_log_top":"log_oak_top","oak_planks":"planks_oak","oak_sapling":"sapling_oak","ocelot_spawn_egg":"spawn_egg_ocelot","orange_bundle":"bundle_orange","orange_bundle_open_back":"bundle_orange_open_back","orange_bundle_open_front":"bundle_orange_open_front","orange_concrete":"concrete_orange","orange_concrete_powder":"concrete_powder_orange","orange_glazed_terracotta":"glazed_terracotta_orange","orange_harness":"harness_orange","orange_shulker_box":"shulker_top_orange","orange_stained_glass":"glass_orange","orange_stained_glass_pane_top":"glass_pane_top_orange","orange_terracotta":"hardened_clay_stained_orange","orange_tulip":"flower_tulip_orange","orange_wool":"wool_colored_orange","oxeye_daisy":"flower_oxeye_daisy","packed_ice":"ice_packed","panda_spawn_egg":"spawn_egg_panda","parrot_spawn_egg":"spawn_egg_parrot","peony_bottom":"double_plant_paeonia_bottom","peony_top":"double_plant_paeonia_top","phantom_spawn_egg":"spawn_egg_phantom","pig_spawn_egg":"spawn_egg_pig","piglin_brute_spawn_egg":"spawn_egg_piglin_brute","piglin_spawn_egg":"spawn_egg_piglin","pillager_spawn_egg":"spawn_egg_pillager","pink_bundle":"bundle_pink","pink_bundle_open_back":"bundle_pink_open_back","pink_bundle_open_front":"bundle_pink_open_front","pink_concrete":"concrete_pink","pink_concrete_powder":"concrete_powder_pink","pink_glazed_terracotta":"glazed_terracotta_pink","pink_harness":"harness_pink","pink_shulker_box":"shulker_top_pink","pink_stained_glass":"glass_pink","pink_stained_glass_pane_top":"glass_pane_top_pink","pink_terracotta":"hardened_clay_stained_pink","pink_tulip":"flower_tulip_pink","pink_wool":"wool_colored_pink","poisonous_potato":"potato_poisonous","polar_bear_spawn_egg":"spawn_egg_polar_bear","polished_andesite":"stone_andesite_smooth","polished_diorite":"stone_diorite_smooth","polished_granite":"stone_granite_smooth","popped_chorus_fruit":"chorus_fruit_popped","poppy":"flower_rose","potatoes_stage0":"potatoes_stage_0","potatoes_stage1":"potatoes_stage_1","potatoes_stage2":"potatoes_stage_2","potatoes_stage3":"potatoes_stage_3","powder_snow_bucket":"bucket_powder_snow","powered_rail":"rail_golden","pufferfish_bucket":"bucket_pufferfish","pufferfish_spawn_egg":"spawn_egg_pufferfish","pumpkin_seeds":"seeds_pumpkin","pumpkin_stem":"pumpkin_stem_disconnected","purple_bundle":"bundle_purple","purple_bundle_open_back":"bundle_purple_open_back","purple_bundle_open_front":"bundle_purple_open_front","purple_concrete":"concrete_purple","purple_concrete_powder":"concrete_powder_purple","purple_glazed_terracotta":"glazed_terracotta_purple","purple_harness":"harness_purple","purple_shulker_box":"shulker_top_purple","purple_stained_glass":"glass_purple","purple_stained_glass_pane_top":"glass_pane_top_purple","purple_terracotta":"hardened_clay_stained_purple","purple_wool":"wool_colored_purple","rabbit_spawn_egg":"spawn_egg_rabbit","rail":"rail_normal","ravager_spawn_egg":"spawn_egg_ravager","red_bundle":"bundle_red","red_bundle_open_back":"bundle_red_open_back","red_bundle_open_front":"bundle_red_open_front","red_concrete":"concrete_red","red_concrete_powder":"concrete_powder_red","red_glazed_terracotta":"glazed_terracotta_red","red_harness":"harness_red","red_mushroom":"mushroom_red","red_mushroom_block":"mushroom_block_skin_red","red_shulker_box":"shulker_top_red","red_stained_glass":"glass_red","red_stained_glass_pane_top":"glass_pane_top_red","red_terracotta":"hardened_clay_stained_red","red_tulip":"flower_tulip_red","red_wool":"wool_colored_red","rose":"flower_rose","rose_bush_bottom":"double_plant_rose_bottom","rose_bush_top":"double_plant_rose_top","salmon_bucket":"bucket_salmon","salmon_spawn_egg":"spawn_egg_salmon","sheep_spawn_egg":"spawn_egg_sheep","short_grass":"tallgrass","shulker_spawn_egg":"spawn_egg_shulker","silverfish_spawn_egg":"spawn_egg_silverfish","skeleton_horse_spawn_egg":"spawn_egg_skeleton_horse","skeleton_spawn_egg":"spawn_egg_skeleton","slime_spawn_egg":"spawn_egg_slime","sniffer_spawn_egg":"spawn_egg_sniffer","snow_golem_spawn_egg":"spawn_egg_snow_golem","spawner":"mob_spawner","spider_spawn_egg":"spawn_egg_spider","spruce_boat":"boat_spruce","spruce_door":"door_spruce","spruce_door_bottom":"door_spruce_lower","spruce_door_top":"door_spruce_upper","spruce_leaves":"leaves_spruce","spruce_log":"log_spruce","spruce_log_top":"log_spruce_top","spruce_planks":"planks_spruce","spruce_sapling":"sapling_spruce","spruce_sign":"sign_spruce","squid_spawn_egg":"spawn_egg_squid","stone_bricks":"stonebrick","stray_spawn_egg":"spawn_egg_stray","strider_spawn_egg":"spawn_egg_strider","sunflower_back":"double_plant_sunflower_back","sunflower_bottom":"double_plant_sunflower_bottom","sunflower_front":"double_plant_sunflower_front","sunflower_top":"double_plant_sunflower_top","tadpole_bucket":"bucket_tadpole","tadpole_spawn_egg":"spawn_egg_tadpole","tall_grass_bottom":"double_plant_grass_bottom","tall_grass_top":"double_plant_grass_top","tnt_minecart":"minecart_tnt","torchflower_crop_stage0":"torchflower_crop_stage_0","torchflower_crop_stage1":"torchflower_crop_stage_1","trader_llama_spawn_egg":"spawn_egg_trader_llama","turtle_layer_1":"turtle_1","turtle_spawn_egg":"spawn_egg_turtle","vex_spawn_egg":"spawn_egg_vex","villager_spawn_egg":"spawn_egg_villager","vindicator_spawn_egg":"spawn_egg_vindicator","wandering_trader_spawn_egg":"spawn_egg_wandering_trader","warden_spawn_egg":"spawn_egg_warden","warped_sign":"sign_warped","water_bucket":"bucket_water","wet_sponge":"sponge_wet","wheat_seeds":"seeds_wheat","wheat_stage0":"wheat_stage_0","wheat_stage1":"wheat_stage_1","wheat_stage2":"wheat_stage_2","wheat_stage3":"wheat_stage_3","wheat_stage4":"wheat_stage_4","wheat_stage5":"wheat_stage_5","wheat_stage6":"wheat_stage_6","wheat_stage7":"wheat_stage_7","white_bundle":"bundle_white","white_bundle_open_back":"bundle_white_open_back","white_bundle_open_front":"bundle_white_open_front","white_concrete":"concrete_white","white_concrete_powder":"concrete_powder_white","white_glazed_terracotta":"glazed_terracotta_white","white_harness":"harness_white","white_shulker_box":"shulker_top_white","white_stained_glass":"glass_white","white_stained_glass_pane_top":"glass_pane_top_white","white_terracotta":"hardened_clay_stained_white","white_tulip":"flower_tulip_white","white_wool":"wool_colored_white","witch_spawn_egg":"spawn_egg_witch","wither_rose":"flower_wither_rose","wither_skeleton_spawn_egg":"spawn_egg_wither_skeleton","wither_spawn_egg":"spawn_egg_wither","wolf_spawn_egg":"spawn_egg_wolf","writable_book":"book_writable","written_book":"book_written","yellow_bundle":"bundle_yellow","yellow_bundle_open_back":"bundle_yellow_open_back","yellow_bundle_open_front":"bundle_yellow_open_front","yellow_concrete":"concrete_yellow","yellow_concrete_powder":"concrete_powder_yellow","yellow_glazed_terracotta":"glazed_terracotta_yellow","yellow_harness":"harness_yellow","yellow_shulker_box":"shulker_top_yellow","yellow_stained_glass":"glass_yellow","yellow_stained_glass_pane_top":"glass_pane_top_yellow","yellow_terracotta":"hardened_clay_stained_yellow","yellow_wool":"wool_colored_yellow","zoglin_spawn_egg":"spawn_egg_zoglin","zombie_horse_spawn_egg":"spawn_egg_zombie_horse","zombie_spawn_egg":"spawn_egg_zombie","zombie_villager_spawn_egg":"spawn_egg_zombie_villager","zombified_piglin_spawn_egg":"spawn_egg_zombified_piglin"};
-const BUILTIN_MAP_SIZE = 484;
+const BUILTIN_MAP = {"acacia_boat":"boat_acacia","acacia_door":"door_acacia","acacia_door_bottom":"door_acacia_lower","acacia_door_top":"door_acacia_upper","acacia_leaves":"leaves_acacia","acacia_log":"log_acacia","acacia_log_top":"log_acacia_top","acacia_planks":"planks_acacia","acacia_sapling":"sapling_acacia","acacia_sign":"sign_acacia","activator_rail":"rail_activator","allay_spawn_egg":"spawn_egg_allay","allium":"flower_allium","andesite":"stone_andesite","anvil":"anvil_base","anvil_top":"anvil_top_damaged_0","armadillo_spawn_egg":"spawn_egg_armadillo","attached_melon_stem":"melon_stem_connected","attached_pumpkin_stem":"pumpkin_stem_connected","axolotl_bucket":"bucket_axolotl","axolotl_spawn_egg":"spawn_egg_axolotl","azure_bluet":"flower_houstonia","baked_potato":"potato_baked","bamboo_small_leaves":"bamboo_small_leaf","bamboo_stalk":"bamboo_stem","bat_spawn_egg":"spawn_egg_bat","bee_spawn_egg":"spawn_egg_bee","beetroot_seeds":"seeds_beetroot","beetroots_stage0":"beetroots_stage_0","beetroots_stage1":"beetroots_stage_1","beetroots_stage2":"beetroots_stage_2","beetroots_stage3":"beetroots_stage_3","birch_boat":"boat_birch","birch_door":"door_birch","birch_door_bottom":"door_birch_lower","birch_door_top":"door_birch_upper","birch_leaves":"leaves_birch","birch_log":"log_birch","birch_log_top":"log_birch_top","birch_planks":"planks_birch","birch_sapling":"sapling_birch","birch_sign":"sign_birch","black_bundle":"bundle_black","black_bundle_open_back":"bundle_black_open_back","black_bundle_open_front":"bundle_black_open_front","black_concrete":"concrete_black","black_concrete_powder":"concrete_powder_black","black_glazed_terracotta":"glazed_terracotta_black","black_harness":"harness_black","black_shulker_box":"shulker_top_black","black_stained_glass":"glass_black","black_stained_glass_pane_top":"glass_pane_top_black","black_terracotta":"hardened_clay_stained_black","black_wool":"wool_colored_black","blast_furnace_front":"blast_furnace_front_off","blaze_spawn_egg":"spawn_egg_blaze","blue_bundle":"bundle_blue","blue_bundle_open_back":"bundle_blue_open_back","blue_bundle_open_front":"bundle_blue_open_front","blue_concrete":"concrete_blue","blue_concrete_powder":"concrete_powder_blue","blue_glazed_terracotta":"glazed_terracotta_blue","blue_harness":"harness_blue","blue_orchid":"flower_blue_orchid","blue_shulker_box":"shulker_top_blue","blue_stained_glass":"glass_blue","blue_stained_glass_pane_top":"glass_pane_top_blue","blue_terracotta":"hardened_clay_stained_blue","blue_wool":"wool_colored_blue","bogged_spawn_egg":"spawn_egg_bogged","breeze_spawn_egg":"spawn_egg_breeze","bricks":"brick","brown_bundle":"bundle_brown","brown_bundle_open_back":"bundle_brown_open_back","brown_bundle_open_front":"bundle_brown_open_front","brown_concrete":"concrete_brown","brown_concrete_powder":"concrete_powder_brown","brown_glazed_terracotta":"glazed_terracotta_brown","brown_harness":"harness_brown","brown_mushroom":"mushroom_brown","brown_mushroom_block":"mushroom_block_skin_brown","brown_shulker_box":"shulker_top_brown","brown_stained_glass":"glass_brown","brown_stained_glass_pane_top":"glass_pane_top_brown","brown_terracotta":"hardened_clay_stained_brown","brown_wool":"wool_colored_brown","camel_spawn_egg":"spawn_egg_camel","carrots_stage0":"carrots_stage_0","carrots_stage1":"carrots_stage_1","carrots_stage2":"carrots_stage_2","carved_pumpkin":"pumpkin_face_off","cat_spawn_egg":"spawn_egg_cat","cave_spider_spawn_egg":"spawn_egg_cave_spider","chainmail_layer_1":"chain_1","chainmail_layer_2":"chain_2","cherry_door_bottom":"cherry_door_bottom","cherry_door_top":"cherry_door_top","cherry_leaves":"cherry_leaves","cherry_log":"cherry_log_side","chest_minecart":"minecart_chest","chicken_spawn_egg":"spawn_egg_chicken","chipped_anvil_top":"anvil_top_damaged_1","chiseled_quartz_block":"quartz_block_chiseled","chiseled_quartz_block_top":"quartz_block_chiseled_top","cobweb":"web","cocoa_stage0":"cocoa_stage_0","cocoa_stage1":"cocoa_stage_1","cocoa_stage2":"cocoa_stage_2","cod_bucket":"bucket_cod","cod_spawn_egg":"spawn_egg_cod","command_block_minecart":"minecart_command_block","cooked_beef":"beef_cooked","cooked_chicken":"chicken_cooked","cooked_mutton":"mutton_cooked","cooked_porkchop":"porkchop_cooked","cooked_rabbit":"rabbit_cooked","cornflower":"flower_cornflower","cow_spawn_egg":"spawn_egg_cow","cracked_stone_bricks":"stonebrick_cracked","crafter_top_crafting":"crafter_top","creaking_spawn_egg":"spawn_egg_creaking","creeper_spawn_egg":"spawn_egg_creeper","crimson_door_bottom":"crimson_door_lower","crimson_door_top":"crimson_door_top","crimson_sign":"sign_crimson","cut_red_sandstone":"red_sandstone_smooth","cut_sandstone":"sandstone_smooth","cyan_bundle":"bundle_cyan","cyan_bundle_open_back":"bundle_cyan_open_back","cyan_bundle_open_front":"bundle_cyan_open_front","cyan_concrete":"concrete_cyan","cyan_concrete_powder":"concrete_powder_cyan","cyan_glazed_terracotta":"glazed_terracotta_cyan","cyan_harness":"harness_cyan","cyan_shulker_box":"shulker_top_cyan","cyan_stained_glass":"glass_cyan","cyan_stained_glass_pane_top":"glass_pane_top_cyan","cyan_terracotta":"hardened_clay_stained_cyan","cyan_wool":"wool_colored_cyan","damaged_anvil_top":"anvil_top_damaged_2","dandelion":"flower_dandelion","dark_oak_boat":"boat_dark_oak","dark_oak_door":"door_dark_oak","dark_oak_door_bottom":"door_dark_oak_lower","dark_oak_door_top":"door_dark_oak_upper","dark_oak_leaves":"leaves_big_oak","dark_oak_log":"log_big_oak","dark_oak_log_top":"log_big_oak_top","dark_oak_planks":"planks_big_oak","dark_prismarine":"prismarine_dark","dead_bush":"deadbush","detector_rail":"rail_detector","diamond_layer_1":"diamond_1","diamond_layer_2":"diamond_2","diorite":"stone_diorite","dirt_path_side":"grass_path_side","dirt_path_top":"grass_path_top","dolphin_spawn_egg":"spawn_egg_dolphin","donkey_spawn_egg":"spawn_egg_donkey","drowned_spawn_egg":"spawn_egg_drowned","elder_guardian_spawn_egg":"spawn_egg_elder_guardian","elytra_broken":"broken_elytra","enchanted_book":"book_enchanted","end_portal_frame_eye":"endframe_eye","end_portal_frame_side":"endframe_side","end_portal_frame_top":"endframe_top","ender_dragon_spawn_egg":"spawn_egg_ender_dragon","enderman_spawn_egg":"spawn_egg_enderman","endermite_spawn_egg":"spawn_egg_endermite","evoker_spawn_egg":"spawn_egg_evoker","farmland":"farmland_dry","farmland_moist":"farmland_wet","fermented_spider_eye":"spider_eye_fermented","filled_map":"map_filled","flowering_azalea_leaves":"azalea_leaves_flowers","fox_spawn_egg":"spawn_egg_fox","frog_spawn_egg":"spawn_egg_frog","furnace_front":"furnace_front_off","furnace_minecart":"minecart_furnace","ghast_spawn_egg":"spawn_egg_ghast","glow_squid_spawn_egg":"spawn_egg_glow_squid","goat_spawn_egg":"spawn_egg_goat","golden_apple":"apple_golden","golden_carrot":"carrot_golden","golden_layer_1":"gold_1","golden_layer_2":"gold_2","granite":"stone_granite","grass_block_side":"grass_side","grass_block_top":"grass_top","gray_bundle":"bundle_gray","gray_bundle_open_back":"bundle_gray_open_back","gray_bundle_open_front":"bundle_gray_open_front","gray_concrete":"concrete_gray","gray_concrete_powder":"concrete_powder_gray","gray_glazed_terracotta":"glazed_terracotta_gray","gray_harness":"harness_gray","gray_shulker_box":"shulker_top_gray","gray_stained_glass":"glass_gray","gray_stained_glass_pane_top":"glass_pane_top_gray","gray_terracotta":"hardened_clay_stained_gray","gray_wool":"wool_colored_gray","green_bundle":"bundle_green","green_bundle_open_back":"bundle_green_open_back","green_bundle_open_front":"bundle_green_open_front","green_concrete":"concrete_green","green_concrete_powder":"concrete_powder_green","green_glazed_terracotta":"glazed_terracotta_green","green_harness":"harness_green","green_shulker_box":"shulker_top_green","green_stained_glass":"glass_green","green_stained_glass_pane_top":"glass_pane_top_green","green_terracotta":"hardened_clay_stained_green","green_wool":"wool_colored_green","guardian_spawn_egg":"spawn_egg_guardian","happy_ghast_spawn_egg":"spawn_egg_happy_ghast","hoglin_spawn_egg":"spawn_egg_hoglin","hopper_minecart":"minecart_hopper","horse_spawn_egg":"spawn_egg_horse","husk_spawn_egg":"spawn_egg_husk","iron_door":"door_iron","iron_golem_spawn_egg":"spawn_egg_iron_golem","iron_layer_1":"iron_1","iron_layer_2":"iron_2","jack_o_lantern":"pumpkin_face_on","jungle_boat":"boat_jungle","jungle_door":"door_jungle","jungle_door_bottom":"door_jungle_lower","jungle_door_top":"door_jungle_upper","jungle_leaves":"leaves_jungle","jungle_log":"log_jungle","jungle_log_top":"log_jungle_top","jungle_planks":"planks_jungle","jungle_sapling":"sapling_jungle","jungle_sign":"sign_jungle","large_fern_bottom":"double_plant_fern_bottom","large_fern_top":"double_plant_fern_top","lava_bucket":"bucket_lava","leather_layer_1":"cloth_1","leather_layer_2":"cloth_2","light_blue_bundle":"bundle_light_blue","light_blue_bundle_open_back":"bundle_light_blue_open_back","light_blue_bundle_open_front":"bundle_light_blue_open_front","light_blue_concrete":"concrete_light_blue","light_blue_concrete_powder":"concrete_powder_light_blue","light_blue_glazed_terracotta":"glazed_terracotta_light_blue","light_blue_harness":"harness_light_blue","light_blue_shulker_box":"shulker_top_light_blue","light_blue_stained_glass":"glass_light_blue","light_blue_stained_glass_pane_top":"glass_pane_top_light_blue","light_blue_terracotta":"hardened_clay_stained_light_blue","light_blue_wool":"wool_colored_light_blue","light_gray_bundle":"bundle_light_gray","light_gray_bundle_open_back":"bundle_light_gray_open_back","light_gray_bundle_open_front":"bundle_light_gray_open_front","light_gray_concrete":"concrete_silver","light_gray_concrete_powder":"concrete_powder_silver","light_gray_glazed_terracotta":"glazed_terracotta_silver","light_gray_harness":"harness_light_gray","light_gray_shulker_box":"shulker_top_silver","light_gray_stained_glass":"glass_silver","light_gray_stained_glass_pane_top":"glass_pane_top_silver","light_gray_terracotta":"hardened_clay_stained_silver","light_gray_wool":"wool_colored_silver","lilac_bottom":"double_plant_syringa_bottom","lilac_top":"double_plant_syringa_top","lily_of_the_valley":"flower_lily_of_the_valley","lily_pad":"waterlily","lime_bundle":"bundle_lime","lime_bundle_open_back":"bundle_lime_open_back","lime_bundle_open_front":"bundle_lime_open_front","lime_concrete":"concrete_lime","lime_concrete_powder":"concrete_powder_lime","lime_glazed_terracotta":"glazed_terracotta_lime","lime_harness":"harness_lime","lime_shulker_box":"shulker_top_lime","lime_stained_glass":"glass_lime","lime_stained_glass_pane_top":"glass_pane_top_lime","lime_terracotta":"hardened_clay_stained_lime","lime_wool":"wool_colored_lime","llama_spawn_egg":"spawn_egg_llama","magenta_bundle":"bundle_magenta","magenta_bundle_open_back":"bundle_magenta_open_back","magenta_bundle_open_front":"bundle_magenta_open_front","magenta_concrete":"concrete_magenta","magenta_concrete_powder":"concrete_powder_magenta","magenta_glazed_terracotta":"glazed_terracotta_magenta","magenta_harness":"harness_magenta","magenta_shulker_box":"shulker_top_magenta","magenta_stained_glass":"glass_magenta","magenta_stained_glass_pane_top":"glass_pane_top_magenta","magenta_terracotta":"hardened_clay_stained_magenta","magenta_wool":"wool_colored_magenta","magma_cube_spawn_egg":"spawn_egg_magma_cube","mangrove_door_bottom":"mangrove_door_bottom","mangrove_door_top":"mangrove_door_top","mangrove_log":"mangrove_log_side","melon_seeds":"seeds_melon","melon_stem":"melon_stem_disconnected","milk_bucket":"bucket_milk","mooshroom_spawn_egg":"spawn_egg_mooshroom","mossy_cobblestone":"cobblestone_mossy","mossy_stone_bricks":"stonebrick_mossy","mule_spawn_egg":"spawn_egg_mule","mushroom_stem":"mushroom_block_skin_stem","nether_quartz_ore":"quartz_ore","nether_wart_stage0":"nether_wart_stage_0","nether_wart_stage1":"nether_wart_stage_1","nether_wart_stage2":"nether_wart_stage_2","netherite_layer_1":"netherite_1","netherite_layer_2":"netherite_2","note_block":"noteblock","oak_boat":"boat_oak","oak_door_bottom":"door_wood_lower","oak_door_top":"door_wood_upper","oak_leaves":"leaves_oak","oak_log":"log_oak","oak_log_top":"log_oak_top","oak_planks":"planks_oak","oak_sapling":"sapling_oak","ocelot_spawn_egg":"spawn_egg_ocelot","orange_bundle":"bundle_orange","orange_bundle_open_back":"bundle_orange_open_back","orange_bundle_open_front":"bundle_orange_open_front","orange_concrete":"concrete_orange","orange_concrete_powder":"concrete_powder_orange","orange_glazed_terracotta":"glazed_terracotta_orange","orange_harness":"harness_orange","orange_shulker_box":"shulker_top_orange","orange_stained_glass":"glass_orange","orange_stained_glass_pane_top":"glass_pane_top_orange","orange_terracotta":"hardened_clay_stained_orange","orange_tulip":"flower_tulip_orange","orange_wool":"wool_colored_orange","oxeye_daisy":"flower_oxeye_daisy","packed_ice":"ice_packed","pale_oak_door_bottom":"pale_oak_door_bottom","pale_oak_door_top":"pale_oak_door_top","pale_oak_log":"pale_oak_log_side","panda_spawn_egg":"spawn_egg_panda","parrot_spawn_egg":"spawn_egg_parrot","peony_bottom":"double_plant_paeonia_bottom","peony_top":"double_plant_paeonia_top","phantom_spawn_egg":"spawn_egg_phantom","pig_spawn_egg":"spawn_egg_pig","piglin_brute_spawn_egg":"spawn_egg_piglin_brute","piglin_spawn_egg":"spawn_egg_piglin","pillager_spawn_egg":"spawn_egg_pillager","pink_bundle":"bundle_pink","pink_bundle_open_back":"bundle_pink_open_back","pink_bundle_open_front":"bundle_pink_open_front","pink_concrete":"concrete_pink","pink_concrete_powder":"concrete_powder_pink","pink_glazed_terracotta":"glazed_terracotta_pink","pink_harness":"harness_pink","pink_shulker_box":"shulker_top_pink","pink_stained_glass":"glass_pink","pink_stained_glass_pane_top":"glass_pane_top_pink","pink_terracotta":"hardened_clay_stained_pink","pink_tulip":"flower_tulip_pink","pink_wool":"wool_colored_pink","poisonous_potato":"potato_poisonous","polar_bear_spawn_egg":"spawn_egg_polar_bear","polished_andesite":"stone_andesite_smooth","polished_diorite":"stone_diorite_smooth","polished_granite":"stone_granite_smooth","popped_chorus_fruit":"chorus_fruit_popped","poppy":"flower_rose","potatoes_stage0":"potatoes_stage_0","potatoes_stage1":"potatoes_stage_1","potatoes_stage2":"potatoes_stage_2","potatoes_stage3":"potatoes_stage_3","powder_snow_bucket":"bucket_powder_snow","powered_rail":"rail_golden","pufferfish_bucket":"bucket_pufferfish","pufferfish_spawn_egg":"spawn_egg_pufferfish","pumpkin_seeds":"seeds_pumpkin","pumpkin_stem":"pumpkin_stem_disconnected","purple_bundle":"bundle_purple","purple_bundle_open_back":"bundle_purple_open_back","purple_bundle_open_front":"bundle_purple_open_front","purple_concrete":"concrete_purple","purple_concrete_powder":"concrete_powder_purple","purple_glazed_terracotta":"glazed_terracotta_purple","purple_harness":"harness_purple","purple_shulker_box":"shulker_top_purple","purple_stained_glass":"glass_purple","purple_stained_glass_pane_top":"glass_pane_top_purple","purple_terracotta":"hardened_clay_stained_purple","purple_wool":"wool_colored_purple","quartz_pillar":"quartz_block_lines","quartz_pillar_top":"quartz_block_lines_top","rabbit_spawn_egg":"spawn_egg_rabbit","rail":"rail_normal","ravager_spawn_egg":"spawn_egg_ravager","red_bundle":"bundle_red","red_bundle_open_back":"bundle_red_open_back","red_bundle_open_front":"bundle_red_open_front","red_concrete":"concrete_red","red_concrete_powder":"concrete_powder_red","red_glazed_terracotta":"glazed_terracotta_red","red_harness":"harness_red","red_mushroom":"mushroom_red","red_mushroom_block":"mushroom_block_skin_red","red_shulker_box":"shulker_top_red","red_stained_glass":"glass_red","red_stained_glass_pane_top":"glass_pane_top_red","red_terracotta":"hardened_clay_stained_red","red_tulip":"flower_tulip_red","red_wool":"wool_colored_red","rose":"flower_rose","rose_bush_bottom":"double_plant_rose_bottom","rose_bush_top":"double_plant_rose_top","salmon_bucket":"bucket_salmon","salmon_spawn_egg":"spawn_egg_salmon","sheep_spawn_egg":"spawn_egg_sheep","short_grass":"tallgrass","shulker_spawn_egg":"spawn_egg_shulker","silverfish_spawn_egg":"spawn_egg_silverfish","skeleton_horse_spawn_egg":"spawn_egg_skeleton_horse","skeleton_spawn_egg":"spawn_egg_skeleton","slime_spawn_egg":"spawn_egg_slime","smoker_front":"smoker_front_off","sniffer_spawn_egg":"spawn_egg_sniffer","snow_golem_spawn_egg":"spawn_egg_snow_golem","spawner":"mob_spawner","spider_spawn_egg":"spawn_egg_spider","spruce_boat":"boat_spruce","spruce_door":"door_spruce","spruce_door_bottom":"door_spruce_lower","spruce_door_top":"door_spruce_upper","spruce_leaves":"leaves_spruce","spruce_log":"log_spruce","spruce_log_top":"log_spruce_top","spruce_planks":"planks_spruce","spruce_sapling":"sapling_spruce","spruce_sign":"sign_spruce","squid_spawn_egg":"spawn_egg_squid","stone_bricks":"stonebrick","stonecutter_saw":"stonecutter2_saw","stray_spawn_egg":"spawn_egg_stray","strider_spawn_egg":"spawn_egg_strider","sugar_cane":"reeds","sunflower_back":"double_plant_sunflower_back","sunflower_bottom":"double_plant_sunflower_bottom","sunflower_front":"double_plant_sunflower_front","sunflower_top":"double_plant_sunflower_top","tadpole_bucket":"bucket_tadpole","tadpole_spawn_egg":"spawn_egg_tadpole","tall_grass_bottom":"double_plant_grass_bottom","tall_grass_top":"double_plant_grass_top","tall_seagrass_bottom":"seagrass_doubletall_bottom_a","tall_seagrass_top":"seagrass_doubletall_top_a","terracotta":"hardened_clay","tnt_minecart":"minecart_tnt","torchflower_crop_stage0":"torchflower_crop_stage_0","torchflower_crop_stage1":"torchflower_crop_stage_1","trader_llama_spawn_egg":"spawn_egg_trader_llama","turtle_layer_1":"turtle_1","turtle_spawn_egg":"spawn_egg_turtle","vex_spawn_egg":"spawn_egg_vex","villager_spawn_egg":"spawn_egg_villager","vindicator_spawn_egg":"spawn_egg_vindicator","wandering_trader_spawn_egg":"spawn_egg_wandering_trader","warden_spawn_egg":"spawn_egg_warden","warped_door_bottom":"warped_door_lower","warped_door_top":"warped_door_top","warped_sign":"sign_warped","water_bucket":"bucket_water","wet_sponge":"sponge_wet","wheat_seeds":"seeds_wheat","wheat_stage0":"wheat_stage_0","wheat_stage1":"wheat_stage_1","wheat_stage2":"wheat_stage_2","wheat_stage3":"wheat_stage_3","wheat_stage4":"wheat_stage_4","wheat_stage5":"wheat_stage_5","wheat_stage6":"wheat_stage_6","wheat_stage7":"wheat_stage_7","white_bundle":"bundle_white","white_bundle_open_back":"bundle_white_open_back","white_bundle_open_front":"bundle_white_open_front","white_concrete":"concrete_white","white_concrete_powder":"concrete_powder_white","white_glazed_terracotta":"glazed_terracotta_white","white_harness":"harness_white","white_shulker_box":"shulker_top_white","white_stained_glass":"glass_white","white_stained_glass_pane_top":"glass_pane_top_white","white_terracotta":"hardened_clay_stained_white","white_tulip":"flower_tulip_white","white_wool":"wool_colored_white","witch_spawn_egg":"spawn_egg_witch","wither_rose":"flower_wither_rose","wither_skeleton_spawn_egg":"spawn_egg_wither_skeleton","wither_spawn_egg":"spawn_egg_wither","wolf_spawn_egg":"spawn_egg_wolf","writable_book":"book_writable","written_book":"book_written","yellow_bundle":"bundle_yellow","yellow_bundle_open_back":"bundle_yellow_open_back","yellow_bundle_open_front":"bundle_yellow_open_front","yellow_concrete":"concrete_yellow","yellow_concrete_powder":"concrete_powder_yellow","yellow_glazed_terracotta":"glazed_terracotta_yellow","yellow_harness":"harness_yellow","yellow_shulker_box":"shulker_top_yellow","yellow_stained_glass":"glass_yellow","yellow_stained_glass_pane_top":"glass_pane_top_yellow","yellow_terracotta":"hardened_clay_stained_yellow","yellow_wool":"wool_colored_yellow","zoglin_spawn_egg":"spawn_egg_zoglin","zombie_horse_spawn_egg":"spawn_egg_zombie_horse","zombie_spawn_egg":"spawn_egg_zombie","zombie_villager_spawn_egg":"spawn_egg_zombie_villager","zombified_piglin_spawn_egg":"spawn_egg_zombified_piglin"};
+const BUILTIN_MAP_SIZE = 515;
 /* 目录重定向：少数贴图在基岩位于 blocks/ 的【子目录】，Java 却在 blocks/ 根。
    name_map.json 只存「文件名→文件名」（不含目录），因此这里按 Java 基名补一层目标子目录。
    实证（官方 bedrock-samples + 网易基岩同款包，两包路径一致）：
@@ -621,7 +1080,23 @@ const BUILTIN_MAP_SIZE = 484;
    注意 key 是【Java 源基名】，value 是相对 textures/ 的目标目录。 */
 const DIR_REDIRECT = {
   warped_planks: 'blocks/huge_fungus',
-  crimson_planks: 'blocks/huge_fungus'
+  crimson_planks: 'blocks/huge_fungus',
+  // 绯红/诡异门：官方在 blocks/huge_fungus/，Java 源在 block/ 根（2026-11-20 补）
+  crimson_door_bottom: 'blocks/huge_fungus',
+  crimson_door_top: 'blocks/huge_fungus',
+  warped_door_bottom: 'blocks/huge_fungus',
+  warped_door_top: 'blocks/huge_fungus',
+  // 深板岩及深板岩矿石：官方在 blocks/deepslate/ 子目录，Java 源在 block/ 根
+  deepslate: 'blocks/deepslate',
+  deepslate_top: 'blocks/deepslate',
+  deepslate_coal_ore: 'blocks/deepslate',
+  deepslate_copper_ore: 'blocks/deepslate',
+  deepslate_diamond_ore: 'blocks/deepslate',
+  deepslate_emerald_ore: 'blocks/deepslate',
+  deepslate_gold_ore: 'blocks/deepslate',
+  deepslate_iron_ore: 'blocks/deepslate',
+  deepslate_lapis_ore: 'blocks/deepslate',
+  deepslate_redstone_ore: 'blocks/deepslate'
 };
 /* 基岩支持 PBR 的贴图目录。地图(textures/map)、界面(textures/ui)、字体、
    画(painting)、群系着色表(colormap) 等在基岩端没有 texture_set 定义，
@@ -665,6 +1140,8 @@ const TGA_BASE = new Set(['cactus_bottom','cactus_side','cactus_top',
   'scaffolding_bottom','scaffolding_side','scaffolding_top',
   'seagrass_doubletall_bottom_a','seagrass_doubletall_bottom_b','seagrass_doubletall_top_a','seagrass_doubletall_top_b',
   'stonecutter2_saw','tallgrass','tallgrass_carried',
+  // 2026-11-20 第二轮：内容级核查补录（官方仅 tga / tga 优先于 png）
+  'reeds','cherry_leaves',
   // 盔甲：基岩的皮革三件是 .tga 基色（其余盔甲是 png），写 png 会被官方 tga 压制
   'leather_1','leather_2','leather_baby']);
 
@@ -676,6 +1153,9 @@ const TGA_BASE = new Set(['cactus_bottom','cactus_side','cactus_top',
 const OVERLAY_SRC = { grass_side: 'grass_block_side_overlay' };
 // 这些 Java 源基名是纯叠加层，基岩无对应文件 → 跳过（由 base 组合成吸收）
 const OVERLAY_ONLY = new Set(['grass_block_side_overlay']);
+/* 源包里的备份/废稿文件：作者留的 *_bak / *_bak2 之类，基岩无对应贴图，
+   转换过去只会产出无效 texture_set 污染包体。按基名跳过并计数（2026-11-20）。 */
+const JUNK_BASE = new Set(['glass_bak']);
 
 function mapName(raw, custom){
   const lower = raw.toLowerCase();
@@ -698,13 +1178,23 @@ function mapName(raw, custom){
   }
   // 床：Java 与基岩同为 textures/entity/bed/{颜色}，只有浅灰叫法不同（light_gray → silver）
   if (dir === 'entity/bed' && base === 'light_gray') return { dir, name:'silver', changed:true, src:'builtin' };
-  let mapped = base, src = 'none';
-  if (custom[base]) { mapped = custom[base]; src = 'custom'; }
+  // custom 值支持两种写法：
+  //   字符串 → 只改文件名（向后兼容原有映射表）
+  //   对象 {name, dir} → 同时改文件名和基岩输出目录（用于「官方位置差异」采纳）
+  //   例：{"deepslate_coal_ore":{"name":"deepslate_coal_ore","dir":"blocks/deepslate"}}
+  let mapped = base, src = 'none', customDir = null;
+  const cv = custom[base];
+  if (cv && typeof cv === 'object'){
+    if (cv.name) mapped = cv.name;
+    if (cv.dir) customDir = String(cv.dir).replace(/^\/+|\/+$/g, '');
+    if (mapped !== base || customDir) src = 'custom';
+  } else if (cv) { mapped = cv; src = 'custom'; }
   else if (BUILTIN_MAP[base]) { mapped = BUILTIN_MAP[base]; src = 'builtin'; }
   // 目录重定向：文件名不变，但基岩把该文件放在 blocks/ 的更深层子目录里。
   // 用 Java 源基名查表（如 warped_planks），对 custom/builtin/none 三路都生效。
   let outDir = dir;
-  if (DIR_REDIRECT[base]) { outDir = DIR_REDIRECT[base]; src = 'builtin'; }
+  if (DIR_REDIRECT[base]) { outDir = DIR_REDIRECT[base]; if (src !== 'custom') src = 'builtin'; }
+  if (customDir) { outDir = customDir; src = 'custom'; }   // 用户显式指定的目录优先级最高
   return { dir: outDir, name: mapped, changed: mapped !== base || outDir !== dir, src };
 }
 /* macOS 打包会往 ZIP 里塞 AppleDouble 资源叉（._xxx.png）与 __MACOSX/，
@@ -821,6 +1311,40 @@ async function detectPackName(zip, label){
 
 /* ============ 状态 ============ */
 let ZIP = null, GROUPS = [], OUT = null, REPORT = null, BUSY = false, DETECTED = null, CUSTOM_ICON = null;
+/* 官方参考包：REF_ZIP 只建中央目录索引（unzipNative 不解压内容），
+   REF_INDEX 只收集纹理名 / texture_set 名 / 目录，不读任何图片像素。 */
+let REF_ZIP = null, REF_INDEX = null, REF_NAME = '', REF_RESULT = null;
+// 内置官方参考清单：bedrock-samples v1.26.70.23-preview 的文件名索引（仅名字+目录，无贴图）。
+// gzip(base64) 约 37KB，手机打开即用，无需下载/选择 172MB 官方包。上传新包时自动让位给上传包。
+const BUILTIN_REF_B64 = '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';
+const BUILTIN_REF_VER = '1.26.70.23-preview';
+let BUILTIN_REF_CACHE = null, REF_SOURCE = 'none';
+async function decodeBuiltinRef(){
+  if (BUILTIN_REF_CACHE) return BUILTIN_REF_CACHE;
+  try {
+    const bin = atob(BUILTIN_REF_B64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const ds = new DecompressionStream('gzip');
+    const txt = await new Response(new Blob([bytes]).stream().pipeThrough(ds)).text();
+    const d = JSON.parse(txt);
+    // 还原成与 buildRefIndex 完全一致的结构，analyzeRef / renderRef 无需任何改动。
+    const images = new Set(d.i), texSets = new Set(Object.keys(d.t));
+    const texSetDirOf = new Map(), dirOf = new Map();
+    for (const k of Object.keys(d.t)){
+      const v = d.t[k];
+      const arr = Array.isArray(v) ? v : [v];
+      const s1 = new Set(arr);
+      texSetDirOf.set(k, s1); dirOf.set(k, new Set(arr));
+    }
+    BUILTIN_REF_CACHE = { images, texSets, dirOf, texSetDirOf,
+      manifestVersion: BUILTIN_REF_VER, label: '内置官方清单', fileCount: d.f, builtin: true };
+    return BUILTIN_REF_CACHE;
+  } catch(e){
+    log('内置参考清单解码失败：' + (e.message || e) + '（可改用上传官方包）', 'w');
+    return null;
+  }
+}
 
 /* ============ 演示包 ============ */
 async function buildDemo(){
@@ -863,7 +1387,12 @@ async function loadAB(ab, label){
       }
     }
     renderScan(label);
-    setStep(3); $('#s2').hidden = false; $('#s3').hidden = false;
+    await ensureRefIndex();
+    if (REF_INDEX){ $('#s2b').hidden = false; analyzeRef(); }
+    else $('#s2b').hidden = true;
+    $('#s2').hidden = false; $('#s3').hidden = false;
+    setStep(2); expandSec('s2'); collapseSec('s2b'); collapseSec('s3');
+    cfgFlowUpdate();   // 载入包后按真实 GROUPS 数刷新配置节点
     $('#s4').hidden = true; $('#s5').hidden = true;
   } catch(e){
     alert('读取失败：' + (e.message || e));
@@ -905,6 +1434,335 @@ function renderScan(label){
   if (nc) w += ` <span class="ok">· 自定义映射 ${nc} 组</span>`;
   if (DETECTED) w += ` <span class="ok">· 包名自动识别「${DETECTED.name.replace(/</g,'&lt;')}」（来源 ${DETECTED.source}）</span>`;
   $('#scanwarn').innerHTML = w;
+}
+
+/* ============ 官方参考包：索引 / 对比 / 候选映射 ============ */
+/* 只读取 ZIP 中央目录里的文件名（unzipNative 不解压内容），不读任何图片像素。
+   官方 texture_set 文件名本身就是「这个基岩纹理存在且支持 PBR」的权威证据。 */
+function bigrams(s){
+  const out = new Set();
+  for (let i=0; i<s.length-1; ++i) out.add(s.slice(i, i+2));
+  return out;
+}
+function dice(a, b){
+  if (a === b) return 1;
+  if (!a || !b) return 0;
+  const A = bigrams(a), B = bigrams(b);
+  let hit = 0;
+  for (const x of A) if (B.has(x)) hit++;
+  return 2*hit / (A.size + B.size);
+}
+function tokenScore(a, b){
+  const A = a.split('_').filter(Boolean), B = b.split('_').filter(Boolean);
+  if (!A.length || !B.length) return 0;
+  let hit = 0;
+  for (const t of A) if (B.indexOf(t) >= 0) hit++;
+  return hit / Math.max(A.length, B.length);
+}
+function candScore(a, b){
+  return 0.55*dice(a, b) + 0.45*tokenScore(a, b);
+}
+async function buildRefIndex(zip, label){
+  const images = new Set(), texSets = new Set(), dirOf = new Map();
+  // texSetDirOf 只统计 texture_set.json 的目录，是「这个纹理确实存在于此目录」的权威依据；
+  // dirOf 额外混入图片目录，仅用于候选搜索，两者不可混用（否则 _mers 图片会污染目录判定）。
+  const texSetDirOf = new Map();
+  for (const n of zip.names){
+    let m = n.match(/(^|\/)textures\/(.+)\.texture_set\.json$/i);
+    if (m){
+      const base = m[2].split('/').pop();
+      const dir  = m[2].replace(/\/[^/]+$/, '');
+      texSets.add(base);
+      if (!dirOf.has(base)) dirOf.set(base, new Set());
+      dirOf.get(base).add(dir);
+      if (!texSetDirOf.has(base)) texSetDirOf.set(base, new Set());
+      texSetDirOf.get(base).add(dir);
+      continue;
+    }
+    m = n.match(/(^|\/)textures\/(.+)\.(png|tga|jpe?g)$/i);
+    if (m){
+      const base = m[2].split('/').pop().replace(/\.(png|tga|jpe?g)$/i, '');
+      if (/_(mers|normal)$/i.test(base)) continue;
+      const dir = m[2].replace(/\/[^/]+$/, '');
+      images.add(base);
+      if (!dirOf.has(base)) dirOf.set(base, new Set());
+      dirOf.get(base).add(dir);
+    }
+  }
+  // bedrock-samples 的 manifest.version 恒为 0.0.1（样例包占位），真实版本在文件名里。
+  let manifestVersion = null;
+  const vm = String(label || '').match(/v?(\d+\.\d+\.\d+\.\d+)(?:[-_](preview|beta|release))?/i);
+  if (vm) manifestVersion = vm[1] + (vm[2] ? '-' + vm[2].toLowerCase() : '');
+  if (!manifestVersion){
+    for (const n of zip.names.filter(x => /(^|\/)manifest\.json$/i.test(x)).slice(0, 16)){
+      try {
+        const txt = new TextDecoder('utf-8').decode(new Uint8Array(await zip.get(n))).replace(/^\uFEFF/, '');
+        const j = JSON.parse(txt);
+        const v = j && j.header && j.header.version;
+        if (v && !(Array.isArray(v) && v.join('.') === '0.0.1')){
+          manifestVersion = Array.isArray(v) ? v.join('.') : String(v);
+          break;
+        }
+      } catch(e){}
+    }
+  }
+  return { images, texSets, dirOf, texSetDirOf, manifestVersion, label, fileCount: zip.names.length };
+}
+async function ensureRefIndex(){
+  if (REF_INDEX) return;
+  if (REF_ZIP){
+    REF_INDEX = await buildRefIndex(REF_ZIP, REF_NAME);
+    REF_SOURCE = 'uploaded';
+    log(`官方参考索引已建立（上传包）：${REF_INDEX.texSets.size} 个 texture_set / ${REF_INDEX.images.size} 张官方纹理` +
+        (REF_INDEX.manifestVersion ? ' · Bedrock ' + REF_INDEX.manifestVersion : ''), 'g');
+  } else {
+    // 手机等无官方包场景：直接用内置清单，对比能力开箱即用。
+    REF_INDEX = await decodeBuiltinRef();
+    if (REF_INDEX){
+      REF_SOURCE = 'builtin'; REF_NAME = '内置官方清单';
+      log(`已启用内置官方清单：${REF_INDEX.texSets.size} 个 texture_set / ${REF_INDEX.images.size} 张官方纹理` +
+          (REF_INDEX.manifestVersion ? ' · Bedrock ' + REF_INDEX.manifestVersion : '') + '（无需上传官方包）', 'g');
+    }
+  }
+}
+function analyzeRef(){
+  if (!ZIP || !REF_INDEX) return;
+  let custom = {};
+  try { custom = JSON.parse($('#mapjson').value || '{}'); } catch(e){}
+  // 全局名字池 + 每个名字在官方出现过的所有 texture_set 目录。
+  // 候选搜索不再局限于 Java 当前顶层目录——官方常把同名纹理放到 blocks/deepslate、
+  // items/spawn_eggs 等子目录，只按顶层找会漏掉这些「位置不同」的对应物。
+  const allNames = Array.from(REF_INDEX.texSets);
+  // 统计当前配置下每个「目录/输出名」被哪些 Java 源占用：候选若指向已占用的位置，
+  // 采用后会在转换阶段被去重跳过，必须提前标出来，否则用户以为改好了却丢了贴图。
+  const occupied = new Map();
+  for (const g of GROUPS){
+    const p = g.color || g.spec;
+    if (!p) continue;
+    const b = p.split('/').pop().replace(/(_s|_n)?\.png$/i, '');
+    const mm = mapName(p, custom);
+    if (!mm.name) continue;
+    const key = mm.dir + '/' + mm.name;
+    if (!occupied.has(key)) occupied.set(key, new Set());
+    occupied.get(key).add(b);
+  }
+  const rows = [], stat = { verified:0, direct:0, location:0, candidates:0, unresolved:0, unverified:0 };
+  // 判断官方目录集合里是否含 Java 当前输出目录；含=位置一致。
+  const dirHas = (name, dir) => {
+    const ds = REF_INDEX.texSetDirOf.get(name);
+    return !!(ds && ds.has(dir));
+  };
+  for (const g of GROUPS){
+    const srcPath = g.color || g.spec;
+    if (!srcPath) continue;
+    const base = srcPath.split('/').pop().replace(/(_s|_n)?\.png$/i, '');
+    if (OVERLAY_ONLY.has(base)) continue;
+    // Java 旧式分方向床贴图（block/bed_head_*、bed_foot_*）在基岩是
+    // entity/bed/{颜色} 单张贴图靠 UV 取区域，没有一一对应的基岩名。
+    if (/bed_(head|foot|end|side|top)/.test(base)) continue;
+    const m = mapName(srcPath, custom);
+    if (m.skip || !m.name || !isPBRDir(m.dir)) continue;
+    const officialDirs = Array.from(REF_INDEX.texSetDirOf.get(m.name) || []).sort();
+    const nameExists = REF_INDEX.texSets.has(m.name);
+
+    // 已映射（内置/自定义）的名字：既要名字对，也要位置对。
+    if (m.src === 'builtin' || m.src === 'custom'){
+      if (nameExists && dirHas(m.name, m.dir)) { stat.verified++; continue; }
+      if (nameExists && officialDirs.length){
+        // 名字对但位置不对 —— 这是过去被当成「确认」放过的漏网之鱼。
+        stat.location++;
+        rows.push({ base, cur:m.name, dir:m.dir, kind:'location', offDirs:officialDirs, cand:[] });
+        continue;
+      }
+      // 名字在官方完全找不到：仍需保留提醒（例如映射表把名字改成了官方没有的）
+      stat.unverified++;
+      rows.push({ base, cur:m.name, dir:m.dir, kind:'unverified', cand:[] });
+      continue;
+    }
+
+    // 未映射（src=none，精确同名直传）：名字在官方且位置一致 → 直接确认
+    if (nameExists && dirHas(m.name, m.dir)){ stat.direct++; continue; }
+    // 名字在官方但位置不同 → 位置差异，让用户选官方目录覆盖
+    if (nameExists && officialDirs.length){
+      stat.location++;
+      rows.push({ base, cur:m.name, dir:m.dir, kind:'location', offDirs:officialDirs, cand:[] });
+      continue;
+    }
+
+    // 名字不在官方 → 跨全部顶层目录搜候选，同目录加分、跨目录降分但保留
+    const q = base.toLowerCase(), scored = [];
+    for (const r of allNames){
+      const rl = r.toLowerCase();
+      if (q.length < 4 || rl.length < 4) continue;
+      if (!(q.slice(0,4) === rl.slice(0,4) || q.indexOf(rl.slice(0,4)) >= 0 || rl.indexOf(q.slice(0,4)) >= 0)) continue;
+      let s = candScore(q, rl);
+      if (s < 0.5) continue;
+      const rdirs = Array.from(REF_INDEX.texSetDirOf.get(r) || []).sort();
+      const sameDir = rdirs.indexOf(m.dir) >= 0;
+      // 同位置加分，跨位置降权（跨目录仍保留，正是因为要"不缺少"）
+      s = sameDir ? Math.min(1, s + 0.05) : Math.max(0, s - 0.04);
+      const by = occupied.get((sameDir ? m.dir : (rdirs[0] || m.dir)) + '/' + r);
+      const conflict = !!(by && by.size && !by.has(base));
+      scored.push({ name:r, score:s, dirs:rdirs, sameDir, conflict,
+                    by: by ? Array.from(by).slice(0,2).join(', ') : '' });
+    }
+    // 排序：无冲突 > 同目录 > 分数高，避免冲突/跨目录项被默认勾选
+    scored.sort((x, y) =>
+      (x.conflict ? 1 : 0) - (y.conflict ? 1 : 0) ||
+      (y.sameDir ? 1 : 0) - (x.sameDir ? 1 : 0) ||
+      y.score - x.score);
+    const top = scored.slice(0, 3);
+    if (top.length){ stat.candidates++; rows.push({ base, cur:m.name, dir:m.dir, kind:'candidate', cand:top }); }
+    else stat.unresolved++;
+  }
+  REF_RESULT = { rows, stat, applied:0 };
+  renderRef();
+  updateFoldBadges();
+}
+function renderRef(){
+  if (!REF_INDEX) return;
+  const st = REF_RESULT ? REF_RESULT.stat : { verified:0, direct:0, location:0, candidates:0, unresolved:0, unverified:0 };
+  const okN = st.verified + st.direct, needN = st.location + st.candidates + st.unverified;
+  $('#refstats').innerHTML = [
+    [st.verified,'官方确认','ok'], [st.direct,'同名直传','ok'],
+    [st.location,'位置差异','todo'], [st.candidates + st.unverified,'待核对','todo']
+  ].map(([v,k,c]) => `<div class="stat ${c}"><b>${v}</b><span>${k}</span></div>`).join('');
+  $('#refguide').innerHTML =
+    `<div class="gi gi-ok"><span class="gv">${okN}</span><span><b>无需处理</b><br>名字和目录都与官方一致，直接沿用</span></div>` +
+    `<div class="gi gi-todo"><span class="gv">${needN}</span><span><b>需要你决定</b><br>逐条核对后勾选采纳，再点底部按钮</span></div>`;
+  let w = `参考包：<b>${esc(REF_NAME)}</b>`;
+  if (REF_INDEX.manifestVersion) w += ` · <span class="pill">Bedrock ${esc(REF_INDEX.manifestVersion)}</span>`;
+  w += ` · ${REF_INDEX.texSets.size} 个 texture_set · ${REF_INDEX.images.size} 张官方纹理 · ${REF_INDEX.fileCount} 个条目`;
+  if (st.unverified) w += ` <span class="err">· ${st.unverified} 项映射名官方找不到，需手动改名</span>`;
+  w += ' <span class="dim">· 官方包仅作命名/位置证据，不会写入成品</span>';
+  $('#refwarn').innerHTML = w;
+  const rows = REF_RESULT ? REF_RESULT.rows : [];
+  if (!rows.length){
+    $('#reflist').innerHTML = '<div class="ref-empty">✓ 全部条目都与官方一致，无需人工处理</div>';
+    const c = $('#refselcount'); if (c) c.textContent = '0';
+    return;
+  }
+  $('#reflist').innerHTML = rows.map((r, i) => {
+    let badge, curPath, offPreview, opts;
+    if (r.kind === 'location'){
+      badge = '<span class="rc-badge loc">位置不同 · 官方换了目录</span>';
+      curPath = `textures/${esc(r.dir)}/<span class="fn">${esc(r.cur)}</span>`;
+      const sameTop = r.offDirs.filter(d => d.split('/')[0] === r.dir.split('/')[0]);
+      const pick = (sameTop.length ? sameTop : r.offDirs)[0];
+      offPreview = `textures/${esc(pick)}/<span class="fn">${esc(r.cur)}</span>`;
+      opts = r.offDirs.map(d =>
+        `<label class="cand-pill${d===pick?' on':''}" data-pick="loc" data-i="${i}"><input type="radio" name="loc${i}" value="${esc(d)}"${d===pick?' checked':''} hidden><span class="rad"></span><span class="nm">textures/${esc(d)}/</span>${d.split('/')[0]===r.dir.split('/')[0]?'<span class="fl fl-same">同层</span>':''}</label>`
+      ).join('');
+    } else if (r.kind === 'unverified'){
+      badge = '<span class="rc-badge unver">待核对 · 官方无此名</span>';
+      curPath = `textures/${esc(r.dir)}/<span class="fn">${esc(r.cur)}</span>`;
+      offPreview = `<span class="fn">手动填写正确基岩名</span>`;
+      opts = `<input type="text" class="rc-fix" id="fix${i}" value="${esc(r.cur)}" placeholder="输入官方 texture_set 名称">`;
+    } else {
+      badge = '<span class="rc-badge cand">名字不同 · 官方候选</span>';
+      curPath = `textures/${esc(r.dir)}/<span class="fn">${esc(r.cur)}</span>`;
+      const pick = r.cand.find(c => !c.conflict) || r.cand[0];
+      offPreview = `<span class="fn" data-preview="${i}">${esc(pick.name)}</span>`;
+      opts = r.cand.map(c => {
+        const on = c === pick;
+        return `<label class="cand-pill${on?' on':''}${c.conflict?' conflict':''}" data-pick="cand" data-i="${i}"><input type="radio" name="cand${i}" value="${esc(c.name)}"${on?' checked':''} hidden><span class="rad"></span><span class="nm">${esc(c.name)}</span><span class="sc">${c.score.toFixed(2)}</span>${c.sameDir?'<span class="fl fl-same">同目录</span>':(c.dirs&&c.dirs.length?`<span class="fl fl-cross">@${esc((c.dirs[0]||'?').split('/')[0])}</span>`:'')}${c.conflict?`<span class="fl fl-conflict">冲突:${esc(c.by)}</span>`:''}</label>`;
+      }).join('');
+    }
+    return `<div class="refcard ${r.kind==='location'?'loc':r.kind==='unverified'?'unver':''}" data-card="${i}">
+      <div class="rc-head">
+        <span class="rc-name">${esc(r.base)}</span>
+        ${badge}
+        <label class="rc-adopt"><input type="checkbox" id="use${i}">采纳这一项</label>
+      </div>
+      <div class="cmp">
+        <div class="cmp-col"><span class="lbl">当前转换结果（Java → 基岩）</span><span class="path">${curPath}</span></div>
+        <div class="cmp-arrow">→</div>
+        <div class="cmp-col official"><span class="lbl">官方建议改为</span><span class="path" data-off="${i}">${offPreview}</span></div>
+      </div>
+      <div class="rc-opts">${opts}</div>
+    </div>`;
+  }).join('');
+  $('#refapplynote').textContent = '';
+
+  // 选候选 → 高亮该选项、更新右侧预览、自动勾选采纳（选择即表态，减少一步操作）
+  $$('#reflist .cand-pill').forEach(p => p.addEventListener('click', () => {
+    const card = p.closest('.refcard');
+    Array.from(card.querySelectorAll('.cand-pill')).forEach(x => x.classList.remove('on'));
+    p.classList.add('on');
+    const i = card.dataset.card, r = REF_RESULT.rows[i];
+    const val = p.querySelector('input').value;
+    const off = card.querySelector('[data-off]');
+    if (r.kind === 'location') off.innerHTML = `textures/${esc(val)}/<span class="fn">${esc(r.cur)}</span>`;
+    else off.innerHTML = `<span class="fn">${esc(val)}</span>`;
+    const cb = card.querySelector('.rc-adopt input');
+    if (cb && !cb.checked){ cb.checked = true; card.classList.add('adopted'); }
+    updateRefSel();
+  }));
+  $$('#reflist .rc-adopt input').forEach(cb => cb.addEventListener('change', () => {
+    cb.closest('.refcard').classList.toggle('adopted', cb.checked);
+    updateRefSel();
+  }));
+  $$('#reflist .rc-fix').forEach(inp => inp.addEventListener('input', () => {
+    const off = inp.closest('.refcard').querySelector('[data-off]');
+    if (off) off.innerHTML = `<span class="fn">${esc(inp.value)}</span>`;
+  }));
+  updateRefSel();
+}
+function updateRefSel(){
+  const n = $$('#reflist .rc-adopt input:checked').length;
+  const el = $('#refselcount'); if (el) el.textContent = n;
+}
+function applyRef(){
+  if (!REF_RESULT) return;
+  let custom = {};
+  try { custom = JSON.parse($('#mapjson').value || '{}'); } catch(e){}
+  let n = 0;
+  const note = [];
+  REF_RESULT.rows.forEach((r, i) => {
+    const box = document.getElementById('use' + i);
+    if (!box || !box.checked) return;
+    let target = '', outDir = null;
+    if (r.kind === 'location'){
+      const radio = document.querySelector(`input[name="loc${i}"]:checked`);
+      target = r.cur;                       // 位置差异不改名字，只改目录
+      outDir = radio ? radio.value : null;
+    } else if (r.kind === 'unverified'){
+      const inp = document.getElementById('fix' + i);
+      target = inp ? inp.value.trim() : '';
+    } else {
+      const radio = document.querySelector(`input[name="cand${i}"]:checked`);
+      target = radio ? radio.value : '';
+      const c = (r.cand || []).filter(x => x.name === target)[0];
+      // 跨目录候选：一并写入官方目录，否则只改名仍落在错误位置
+      if (c && c.dirs && c.dirs.length && !c.sameDir) outDir = c.dirs[0];
+      if (c && c.conflict)
+        log(`! ${r.base} → ${target}：目标名已被占用，转换时会按重复输出跳过`, 'w');
+    }
+    if (!target) return;
+    if (outDir){
+      custom[r.base] = outDir === r.dir && target === r.base ? target : { name:target, dir:outDir };
+      note.push(`${r.base} → textures/${outDir}/${target}`);
+    } else {
+      if (target === r.base && r.kind !== 'location') return;
+      custom[r.base] = target;
+      note.push(`${r.base} → ${target}`);
+    }
+    n++;
+  });
+  $('#mapjson').value = JSON.stringify(custom, null, 2);
+  if (note.length) log('参考采纳：' + note.slice(0, 6).join('；') + (note.length > 6 ? ` …等 ${note.length} 项` : ''), 'g');
+  REF_RESULT.applied = n;
+  $('#refapplynote').textContent = n
+    ? `✓ 已写入 ${n} 条到「转换配置 → 名称映射」，转换时优先级最高`
+    : '未采用任何条目';
+  // 采纳后清空勾选，界面回到干净状态，避免重复点击误以为还没写入
+  if (n){
+    $$('#reflist .rc-adopt input').forEach(b => { b.checked = false; b.closest('.refcard').classList.remove('adopted'); });
+    updateRefSel();
+  }
+  renderScan('当前包');
+  cfgFlowUpdate();   // 采纳映射写入名称映射后，刷新「官方对比 / 重命名」节点
+  log(`官方参考对比：采用 ${n} 条映射并写入自定义映射`, 'g');
 }
 
 /* ============ 材质通道可视化预览 ============ */
@@ -979,12 +1837,18 @@ async function previewGroup(i){
   } catch(e){ statsEl.textContent = '预览失败：' + (e.message||e); }
 }
 
-/* ============ 转换主流程 ============ */
+/* ============ [转换模块·6] 辅助变换 + 主流程编排 ============
+   overlay 烘焙、封面规整、输出过滤等辅助变换内联在 convert() 主循环中；
+   主循环按 [1]→[5] 依次调用上面各子模块，最终写出 texture_set / manifest / .mcpack。 */
 async function convert(){
   if (BUSY) return; BUSY = true;
   $('#run').disabled = true;
   $('#log').innerHTML = '';
   $('#s4').hidden = false; setStep(4);
+  flowReset();
+  // 输入与官方对比是转换前的既成事实，先据实点亮这两个源节点。
+  flowUpdate({ input: GROUPS.length,
+    ref: REF_RESULT ? (REF_RESULT.stat.verified + REF_RESULT.stat.direct + REF_RESULT.stat.location) : 0 }, 'running');
   let custom = {};
   try { custom = JSON.parse($('#mapjson').value || '{}'); }
   catch(e){ log('名称映射 JSON 解析失败，已忽略自定义映射', 'w'); }
@@ -1002,11 +1866,12 @@ async function convert(){
     map: custom
   };
   const E = [];
-  const failures = [], unmapped = [];
+  const failures = [], unmapped = { general: [], bed: [] };
   let converted = 0, skipped = 0, lostF0 = 0, lostPor = 0, withNormal = 0, noSpec = 0;
   let nBuiltin = 0, nCustom = 0;
   let junkSkipped = 0, invalidPng = 0, dupSkipped = 0;
   let skippedNoPBR = 0, tgaBase = 0, skippedArmorLayer = 0;   // 非PBR目录跳过 / tga基色 / 盔甲无对应层(leather_overlay)
+  let skippedNoColor = 0;   // 只有 _s/_n 通道图、缺基色的孤儿组：跳过而非输出灰色占位图（2026-11-20）
   let bedReuv = 0, bedSkip = 0;   // 床 UV 重排成功 / 非512²跳过
   let overlaySkipped = 0;        // Java _overlay 叠加层（已合成进基色）跳过数
   let overlayComposited = 0;     // 成功把 overlay 烘焙进基色的组数
@@ -1028,7 +1893,7 @@ async function convert(){
   const convRecord = [
     '',
     '──── PBR2VV 转换记录 ────',
-    '工具：PBR2VV M0（离线网页转换器）',
+    '工具：PBR2VV（离线网页转换器）',
     '转换时间：' + convLocal + '（' + convISO + '）',
     '来源：Java LabPBR → 基岩版灵动视效 Vibrant Visuals',
     '选项：' + optText
@@ -1036,7 +1901,7 @@ async function convert(){
   const manifestDesc = ((javaDesc ? javaDesc + '\n' : '') +
     'Converted from LabPBR by PBR2VV' + convRecord).slice(0, 2000);
   const CONV = {
-    tool: 'PBR2VV M0 (offline web)',
+    tool: 'PBR2VV (offline web)',
     convertedAt: convISO, convertedAtLocal: convLocal,
     sourceDescription: javaDesc, sourceDescriptionFromMeta: javaDescFromMeta,
     sourcePackFormat: (DETECTED && DETECTED.packFormat != null) ? DETECTED.packFormat : null,
@@ -1139,15 +2004,24 @@ async function convert(){
     $('#ptext').textContent = `处理 ${i+1} / ${total} · ${g.key.split('/').pop()}`;
     try {
       if (!g.color && !g.spec){ skipped++; continue; }
+      // 只有通道图（_s/_n）、没有基色的孤儿组：灰色占位图会被游戏当成真实贴图渲染
+      // （如 ENRO 的 lapis_block 只有纯黑 _s → 游戏里显示灰块）。正确做法是整组跳过，
+      // 并在报告里如实计数，让用户补源包，而不是悄悄塞一张占位图污染成品。
+      if (!g.color){
+        skippedNoColor++; skipped++;
+        if (skippedNoColor <= 5) log(`! ${g.key.split('/').pop()} 只有通道图缺基色，已跳过（请补基色源图）`, 'w');
+        continue;
+      }
       const basePath = g.color || g.spec;
       const m = mapName(basePath, opt.map);
       // Java 的纯叠加层（如 grass_block_side_overlay）在基岩无独立文件，
       // 其内容会在 base 组转换时 alpha 合成进基色，这里跳过，避免冗余输出。
       const srcBase = g.key.split('/').pop().replace(/(_s|_n)?$/i, '');
       if (OVERLAY_ONLY.has(srcBase)){ overlaySkipped++; skipped++; continue; }
+      if (JUNK_BASE.has(srcBase)){ junkSkipped++; skipped++; continue; }
       if (m.src === 'builtin') nBuiltin++;
       else if (m.src === 'custom') nCustom++;
-      else unmapped.push(m.name);   // 未命中任何映射规则（可能是精确同名，也可能确实未收录）
+      else unmapped[m.dir === 'entity/bed' ? 'bed' : 'general'].push(m.name);   // 未命中映射表：床贴图归 bed（由 bedUV 单独处理），其余归 general（含精确同名直传与待核对）
       const outBase = `textures/${m.dir}/${m.name}`;
       // 非 PBR 目录（map/ui/font/gui/painting 等）：基岩端没有 texture_set，
       // 写进去也不会生效，还会污染包体，直接跳过并如实计数。
@@ -1292,7 +2166,20 @@ async function convert(){
       failures.push({ group: g.key, error: String(e.message||e) });
       log(`✗ ${g.key.split('/').pop()}：${e.message||e}`, 'e');
     }
-    if (i % 3 === 0) await frame();
+    if (i % 3 === 0){
+      // 用本轮真实累计计数刷新节点画布（数据来自上面的转换主循环，非模拟）。
+      flowUpdate({
+        input: GROUPS.length,
+        ref: REF_RESULT ? (REF_RESULT.stat.verified + REF_RESULT.stat.direct + REF_RESULT.stat.location) : 0,
+        name: nBuiltin + nCustom,
+        channel: converted,
+        normal: withNormal,
+        uv: bedReuv,
+        tga: tgaBase,
+        output: E.length
+      }, 'running');
+      await frame();
+    }
   }
 
   // pbr/global.json 里的 minecraft:pbr_fallback_settings 是【全局单例】。
@@ -1310,7 +2197,7 @@ async function convert(){
   }
 
   REPORT = {
-    generator:'PBR2VV M0', target:'Minecraft Bedrock Vibrant Visuals',
+    generator:'PBR2VV', target:'Minecraft Bedrock Vibrant Visuals',
     conversion: CONV,
     options:{ metalPolicy:opt.metal, emitSSS:opt.sss, emitNormal:opt.normal, flipNormalY:opt.flipY,
       minEngineVersion:opt.engine, stackMode:!!opt.stack, bedUVReuv:!!opt.bed },
@@ -1320,6 +2207,7 @@ async function convert(){
       tgaBaseColors:tgaBase, skippedNonPBRDir:skippedNoPBR,
       armorLayers: GROUPS.filter(g => /equipment\/humanoid/.test(g.key||'')).length,
       skippedArmorLayer:skippedArmorLayer, bedUVReuv:bedReuv, bedReuvSkipped:bedSkip,
+      skippedNoColor:skippedNoColor,
       overlayComposited, overlaySkipped, files:E.length },
     localization: { enabled: opt.i18n, languages: opt.i18n ? ['zh_CN','en_US'] : [],
       files: langFiles,
@@ -1336,9 +2224,26 @@ async function convert(){
     bedUV: { enabled:!!opt.bed, reuv:bedReuv, skippedNon512:bedSkip,
       note:'512² 床图由 Java 两分离岛重排为基岩单连通岛：主岛删 48px 缝 + 顶部木条归位；床尾木架用基岩 geometry UV 镂空规格（2×48px 腿，16 色一致，IOU=1.0）+ Java 侧岛【96×96 单元横向 tile：sy=ty,sx=tx%96】——碎块横纵比例不变，彻底消除实机"竖装拉伸"，侧岛 25% 透明工字形区用同行横向最近不透明填充消除白洞；基色/MERS/法线共用几何 alpha 同步。真包底部形状 100% 对齐、底部平均差 15.37→14.32' },
     mapping: { builtinTableSize: BUILTIN_MAP_SIZE, builtinHits: nBuiltin,
-      customHits: nCustom, unchanged: unmapped.length,
-      note: '未改名条目可能是 Java/基岩精确同名，也可能是映射表未收录，需人工核对' },
-    unmappedNames: Array.from(new Set(unmapped)).slice(0,200),
+      customHits: nCustom, unchanged: unmapped.general.length + unmapped.bed.length,
+      note: '未命中改名表的条目已分类：bedTextures 由 bedUV 重排单独处理（无需改名）；unchangedNames 多为 Java/基岩精确同名直传，仅少数需人工核对' },
+    reference: REF_INDEX ? {
+      used: true,
+      source: REF_SOURCE === 'builtin' ? 'builtin' : 'uploaded',
+      fileName: REF_NAME,
+      bedrockVersion: REF_INDEX.manifestVersion,
+      officialTextureSets: REF_INDEX.texSets.size,
+      officialImages: REF_INDEX.images.size,
+      verifiedBuiltin: REF_RESULT ? REF_RESULT.stat.verified : 0,
+      directNames: REF_RESULT ? REF_RESULT.stat.direct : 0,
+      locationDiffs: REF_RESULT ? REF_RESULT.stat.location : 0,
+      candidatesOffered: REF_RESULT ? REF_RESULT.stat.candidates : 0,
+      candidatesApplied: REF_RESULT ? REF_RESULT.applied : 0,
+      needsReview: REF_RESULT ? REF_RESULT.stat.unverified : 0,
+      appliedMappings: (() => { try { return JSON.parse($('#mapjson').value || '{}'); } catch(e){ return {}; } })(),
+      note: '官方包仅作命名/路径证据与候选建议；采纳的条目写入自定义映射后才生效（字符串=改名，{name,dir}=改名+改目录），未复制任何官方素材到成品'
+    } : { used:false, note:'本次未加载官方参考包' },
+    unchangedNames: Array.from(new Set(unmapped.general)),
+    bedTexturesInReport: Array.from(new Set(unmapped.bed)),
     failures
   };
   E.push({ name:'_pbr2vv_report.json', data: enc(REPORT) });
@@ -1346,6 +2251,17 @@ async function convert(){
   // 否则 output.files 会少算报告自身（14 vs 实际 15）。
   REPORT.output.files = E.length;
   E[E.length-1].data = enc(REPORT);
+  // 定格节点画布为最终真实值（与 REPORT 同源，完全一致）。
+  flowUpdate({
+    input: GROUPS.length,
+    ref: REF_RESULT ? (REF_RESULT.stat.verified + REF_RESULT.stat.direct + REF_RESULT.stat.location) : 0,
+    name: nBuiltin + nCustom,
+    channel: converted,
+    normal: withNormal,
+    uv: bedReuv,
+    tga: tgaBase,
+    output: E.length
+  }, 'done');
 
   OUT = zipStore(E);
   const kb = (OUT.size/1024).toFixed(1);
@@ -1370,6 +2286,31 @@ function download(blob, name){
   setTimeout(()=>URL.revokeObjectURL(a.href), 30000);
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   转换模块 · 对外命名空间 ConversionModule
+   ──────────────────────────────────────────────────────────────────────
+   这里把六类变换的入口函数汇聚成一个显式对象，作为「转换模块」的公开 API 面，
+   便于阅读与将来单独抽取。注意：
+     · 每一项都是对【上方已定义函数】的直接引用，不是重新实现；
+     · 主流程 convert() 仍按原样直接调用这些函数，行为 100% 不变；
+     · 只读冻结（Object.freeze），防止误改。
+   ══════════════════════════════════════════════════════════════════════ */
+const ConversionModule = Object.freeze({
+  version: '1.0',
+  // [1] 重命名与路径映射
+  naming: { mapName, isPBRDir, scan, DIR_REDIRECT, BUILTIN_MAP },
+  // [2] 贴图通道换算
+  channels: { labpbrToMers },
+  // [3] 法线重建
+  normal: { splitNormal },
+  // [4] UV 几何重构
+  geometry: { reuvBed, bedLegSolid },
+  // [5] 格式与编码
+  codec: { encodeTGA, encodePNGBytes, makePNG, decodePNG, normalizeIcon, placeholderIcon },
+  // [6] 辅助变换 + 编排入口
+  pipeline: { convert }
+});
+
 /* ============ 事件绑定 ============ */
 $('#drop').addEventListener('click', ()=> $('#file').click());
 $('#file').addEventListener('change', async e => {
@@ -1392,6 +2333,38 @@ $('#demo').addEventListener('click', async () => {
   catch(e){ alert('演示包生成失败：' + (e.message||e)); }
   $('#demo').disabled = false; $('#demo').textContent = '生成演示包并载入';
 });
+async function loadRefFile(f){
+  $('#refhint').textContent = '正在建立官方索引（只读文件名，不解压贴图）…';
+  try {
+    REF_ZIP = await openZip(await f.arrayBuffer());
+    REF_NAME = f.name;
+    REF_INDEX = null; REF_RESULT = null; REF_SOURCE = 'uploaded';
+    $('#refhint').textContent = `已载入 ${f.name} · ${(f.size/1048576).toFixed(1)} MB`;
+    if (ZIP){ await ensureRefIndex(); $('#s2b').hidden = false; analyzeRef(); }
+  } catch(err){
+    REF_ZIP = null; REF_INDEX = null; REF_RESULT = null;
+    $('#refhint').textContent = '读取失败，请重新选择官方参考包';
+    alert('官方参考包读取失败：' + (err.message || err));
+  }
+}
+$('#reffile').addEventListener('change', e => { const f = e.target.files[0]; if (f) loadRefFile(f); });
+$('#refdrop').addEventListener('click', () => $('#reffile').click());
+['dragenter','dragover'].forEach(t => $('#refdrop').addEventListener(t, e => {
+  e.preventDefault(); $('#refdrop').classList.add('over');
+}));
+['dragleave','drop'].forEach(t => $('#refdrop').addEventListener(t, e => {
+  e.preventDefault(); $('#refdrop').classList.remove('over');
+}));
+$('#refdrop').addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadRefFile(f); });
+$('#applyref').addEventListener('click', applyRef);
+$('#refall').addEventListener('click', () => {
+  $$('#reflist .rc-adopt input').forEach(b => { b.checked = true; b.closest('.refcard').classList.add('adopted'); });
+  updateRefSel();
+});
+$('#refnone').addEventListener('click', () => {
+  $$('#reflist .rc-adopt input').forEach(b => { b.checked = false; b.closest('.refcard').classList.remove('adopted'); });
+  updateRefSel();
+});
 $('#iconfile').addEventListener('change', async e => {
   const f = e.target.files[0];
   CUSTOM_ICON = f ? new Uint8Array(await f.arrayBuffer()) : null;
@@ -1402,8 +2375,9 @@ $('#run').addEventListener('click', convert);
 $('#dl').addEventListener('click', () => download(OUT, ($('#packname').value||'pack').trim().replace(/[\\/:*?"<>|]/g,'_') + '.mcpack'));
 $('#dlreport').addEventListener('click', () => download(new Blob([JSON.stringify(REPORT,null,2)],{type:'application/json'}), 'pbr2vv_report.json'));
 $('#again').addEventListener('click', () => {
-  ['s2','s3','s4','s5'].forEach(id => $('#'+id).hidden = true);
+  ['s2','s2b','s3','s4','s5'].forEach(id => $('#'+id).hidden = true);
   setStep(1); $('#file').value = '';
+  // 参考包与已建立的索引保留，方便连续转换多个 Java 包时复用
 });
 
 /* ============ 启动自检 ============ */
@@ -1412,8 +2386,24 @@ $('#again').addEventListener('click', () => {
   try { new DecompressionStream('deflate-raw'); new CompressionStream('deflate'); ok = true; } catch(e){}
   $('#zipmode').textContent = ok ? 'ZIP 引擎：原生 · 完全离线' : 'ZIP 引擎：当前浏览器不支持原生解压';
   if (!ok) $('#demo').disabled = true;
+  initFold();
   log('就绪。点击「生成演示包并载入」即可完整跑通一次转换。', 'g');
 })();
+
+/* ============ 技术说明弹窗 ============ */
+function openTech(){ var m=$('#techModal'); if(m) m.hidden=false; document.body.style.overflow='hidden'; }
+function closeTech(){ var m=$('#techModal'); if(m) m.hidden=true; document.body.style.overflow=''; }
+$('#techBtn').addEventListener('click', openTech);
+$('#techClose').addEventListener('click', closeTech);
+$('#techModal').addEventListener('click', function(e){ if(e.target === $('#techModal')) closeTech(); });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeTech(); });
+
+/* 转换配置 → 节点画布：任一配置变更即时联动（只读配置，不触发转换） */
+['metal','optSss','optNormal','optFlip','optFallback','optStack','optI18n','optBed'].forEach(id => {
+  const el = $('#' + id); if (el) el.addEventListener('change', cfgFlowUpdate);
+});
+$('#mapjson').addEventListener('input', cfgFlowUpdate);
+cfgFlowUpdate();   // 初始按默认配置画一次
 </script>
 </body>
 </html>

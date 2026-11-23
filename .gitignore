@@ -1,0 +1,13 @@
+# 转换器迭代备份（.bak / .bakN / 时间戳 fixbak）
+*.bak*
+*.fixbak*
+
+# 本机专用脚本：build_map.py 的本机适配副本，硬编码本机绝对路径，不适合公开仓库
+# 核心逻辑（MANUAL 补录 + _exists 子目录支持）已同步回 build_map.py
+LabPBR2VV/mapping/build_map_local.py*
+
+# 验证运行产物
+LabPBR2VV/verify/out/
+
+# macOS
+.DS_Store
